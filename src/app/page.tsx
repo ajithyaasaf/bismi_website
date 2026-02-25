@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import CloudinaryVideo from '@/components/CloudinaryVideo';
 import { SHOP_CONFIG, CATEGORIES } from '@/lib/config';
 
 export default function HomePage() {
@@ -11,15 +12,10 @@ export default function HomePage() {
       <main className="flex-1">
         {/* ─── Hero Section ──────────────────────── */}
         <section className="relative w-full bg-black">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
+          <CloudinaryVideo
+            publicId="bismi-broilers/hero_banner_video"
             className="w-full h-auto block"
-          >
-            <source src="/assets/images/banner1.mp4" type="video/mp4" />
-          </video>
+          />
         </section>
 
         {/* ─── Categories Section ────────────────── */}
@@ -29,15 +25,21 @@ export default function HomePage() {
             <p className="text-gray-500">Fresh cuts, delivered daily</p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto sm:max-w-none sm:grid-cols-2">
             {CATEGORIES.map((cat) => (
               <Link
                 key={cat.id}
                 href={`/menu?category=${cat.id}`}
                 className="group relative bg-white rounded-2xl p-5 sm:p-6 text-center border border-gray-100 hover:border-red-200 hover:shadow-lg hover:shadow-red-100/50 transition-all active:scale-[0.97]"
               >
-                <div className="text-4xl sm:text-5xl mb-3 group-hover:scale-110 transition-transform">
-                  {cat.emoji}
+                <div className="w-24 h-24 sm:w-32 sm:h-32 mx-auto mb-4 relative drop-shadow-sm group-hover:scale-110 transition-transform">
+                  <Image
+                    src={cat.image}
+                    alt={cat.name}
+                    fill
+                    className="object-contain"
+                    sizes="(max-width: 640px) 96px, 128px"
+                  />
                 </div>
                 <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-1">{cat.name}</h3>
                 <p className="text-xs text-gray-400 hidden sm:block">{cat.description}</p>
@@ -52,7 +54,7 @@ export default function HomePage() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
               {[
                 { icon: '🥩', title: 'Fresh Daily', desc: 'Sourced & cut fresh every morning' },
-                { icon: '🚚', title: 'Fast Delivery', desc: SHOP_CONFIG.estimatedDeliveryTime },
+                { icon: '🚚', title: 'Free Delivery', desc: 'Free delivery on all orders' },
                 { icon: '💰', title: 'Cash on Delivery', desc: 'Pay when you receive' },
                 { icon: '📱', title: 'Easy Ordering', desc: 'Order in under 2 minutes' },
               ].map((usp) => (
@@ -74,14 +76,14 @@ export default function HomePage() {
                 🛵
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-gray-900 mb-1">Delivery Information</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-1">Free Delivery on Every Order!</h3>
                 <p className="text-sm text-gray-600 mb-2">
-                  We deliver within town limits. Orders above <strong>{SHOP_CONFIG.currency}{SHOP_CONFIG.freeDeliveryAbove}</strong> get <strong>free delivery</strong>!
+                  We deliver to all areas within town — <strong>absolutely free</strong>, no minimum for delivery.
                 </p>
                 <ul className="text-sm text-gray-500 space-y-1">
-                  <li>• Delivery charge: {SHOP_CONFIG.currency}{SHOP_CONFIG.deliveryCharge} (orders below {SHOP_CONFIG.currency}{SHOP_CONFIG.freeDeliveryAbove})</li>
                   <li>• Minimum order: {SHOP_CONFIG.currency}{SHOP_CONFIG.minimumOrderAmount}</li>
                   <li>• Estimated time: {SHOP_CONFIG.estimatedDeliveryTime}</li>
+                  <li>• Payment: Cash on Delivery</li>
                 </ul>
               </div>
             </div>

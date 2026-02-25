@@ -6,29 +6,51 @@ import { MeatType } from '@/types';
 import { formatCurrency } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
 import QuantitySelector from './QuantitySelector';
+import PieceSelectorModal from './PieceSelectorModal';
 
 interface ProductCardProps {
     product: MeatType;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-    const [showQtySelector, setShowQtySelector] = useState(false);
+    const [showSelector, setShowSelector] = useState(false);
     const [addedAnimation, setAddedAnimation] = useState(false);
     const { addItem } = useCart();
 
-    const handleAddToCart = (kg: number) => {
+    const isPerPiece = product.unit === 'piece';
+
+    const flashAdded = () => {
+        setAddedAnimation(true);
+        setTimeout(() => setAddedAnimation(false), 1500);
+    };
+
+    // Handler for kg-based products
+    const handleAddKg = (kg: number) => {
         addItem({
             meatTypeId: product.id,
             meatName: product.name,
+            unit: 'kg',
             kg,
-            pricePerKg: product.pricePerKg, // Lock price at add time
+            pricePerKg: product.pricePerKg,
             imageURL: product.imageURL,
         });
-        setShowQtySelector(false);
+        setShowSelector(false);
+        flashAdded();
+    };
 
-        // Flash "Added" animation
-        setAddedAnimation(true);
-        setTimeout(() => setAddedAnimation(false), 1500);
+    // Handler for piece-based products
+    const handleAddPieces = (pieces: number, cuttingPreference: string) => {
+        addItem({
+            meatTypeId: product.id,
+            meatName: product.name,
+            unit: 'piece',
+            pieces,
+            pricePerPiece: product.pricePerPiece,
+            cuttingPreference,
+            imageURL: product.imageURL,
+        });
+        setShowSelector(false);
+        flashAdded();
     };
 
     return (
@@ -53,6 +75,13 @@ export default function ProductCard({ product }: ProductCardProps) {
                             </div>
                         </div>
                     )}
+
+                    {/* "Per piece" badge for quail */}
+                    {isPerPiece && (
+                        <span className="absolute top-2 left-2 bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            Per Piece
+                        </span>
+                    )}
                 </div>
 
                 {/* Content */}
@@ -62,11 +91,24 @@ export default function ProductCard({ product }: ProductCardProps) {
 
                     <div className="flex items-center justify-between">
                         <div>
-                            <span className="text-lg font-bold text-red-600">{formatCurrency(product.pricePerKg)}</span>
-                            <span className="text-xs text-gray-400 ml-1">/kg</span>
+                            {isPerPiece ? (
+                                <>
+                                    <span className="text-lg font-bold text-red-600">
+                                        {formatCurrency(product.pricePerPiece ?? 0)}
+                                    </span>
+                                    <span className="text-xs text-gray-400 ml-1">/piece</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span className="text-lg font-bold text-red-600">
+                                        {formatCurrency(product.pricePerKg)}
+                                    </span>
+                                    <span className="text-xs text-gray-400 ml-1">/kg</span>
+                                </>
+                            )}
                         </div>
                         <button
-                            onClick={() => setShowQtySelector(true)}
+                            onClick={() => setShowSelector(true)}
                             className="px-4 py-2 text-sm font-semibold text-white bg-red-600 rounded-xl hover:bg-red-700 active:scale-95 transition-all"
                         >
                             Add
@@ -75,13 +117,22 @@ export default function ProductCard({ product }: ProductCardProps) {
                 </div>
             </div>
 
-            {/* Quantity Selector Modal */}
-            {showQtySelector && (
-                <QuantitySelector
-                    productName={product.name}
-                    onSelect={handleAddToCart}
-                    onCancel={() => setShowQtySelector(false)}
-                />
+            {/* Show the right selector modal based on unit type */}
+            {showSelector && (
+                isPerPiece ? (
+                    <PieceSelectorModal
+                        productName={product.name}
+                        pricePerPiece={product.pricePerPiece ?? 0}
+                        onSelect={handleAddPieces}
+                        onCancel={() => setShowSelector(false)}
+                    />
+                ) : (
+                    <QuantitySelector
+                        productName={product.name}
+                        onSelect={handleAddKg}
+                        onCancel={() => setShowSelector(false)}
+                    />
+                )
             )}
         </>
     );

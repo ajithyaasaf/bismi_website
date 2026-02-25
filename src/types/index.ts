@@ -17,7 +17,9 @@ export enum DeliveryType {
 export interface MeatType {
   id: string;
   name: string;
-  pricePerKg: number;
+  pricePerKg: number;       // For kg-based products
+  pricePerPiece?: number;   // For piece-based products (e.g. Quail)
+  unit: 'kg' | 'piece';    // Determines which UI/model to use
   imageURL: string;
   description: string;
   category: string;
@@ -28,8 +30,15 @@ export interface MeatType {
 export interface OrderItem {
   meatTypeId: string;
   meatName: string;
-  kg: number;
-  pricePerKg: number; // Locked at order time
+  unit: 'kg' | 'piece';
+  // Exactly one of these will be set, depending on unit type:
+  kg?: number;
+  pieces?: number;
+  // Price locked at time of order:
+  pricePerKg?: number;
+  pricePerPiece?: number;
+  // Optional cutting preference (used for quail):
+  cuttingPreference?: string;
   subtotal: number;
 }
 
@@ -53,7 +62,14 @@ export interface Order {
 export interface CartItem {
   meatTypeId: string;
   meatName: string;
-  kg: number;
-  pricePerKg: number; // Locked when added to cart
+  unit: 'kg' | 'piece';
+  // One of these will be set:
+  kg?: number;
+  pieces?: number;
+  // One of these will be set:
+  pricePerKg?: number;
+  pricePerPiece?: number;
+  // Optional cutting preference (for quail):
+  cuttingPreference?: string;
   imageURL: string;
 }

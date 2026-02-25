@@ -72,11 +72,10 @@ export function buildWhatsAppUrl(orderId: string, customerName: string): string 
 }
 
 /**
- * Compute delivery charge based on subtotal.
+ * Compute delivery charge — always free.
  */
-export function computeDeliveryCharge(subtotal: number): number {
-    if (subtotal >= SHOP_CONFIG.freeDeliveryAbove) return 0;
-    return SHOP_CONFIG.deliveryCharge;
+export function computeDeliveryCharge(_subtotal: number): number {
+    return 0;
 }
 
 /**

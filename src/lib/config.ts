@@ -15,8 +15,7 @@ export const SHOP_CONFIG = {
 
     // Order rules
     minimumOrderAmount: 100, // ₹
-    deliveryCharge: 30, // ₹
-    freeDeliveryAbove: 500, // ₹ — Free delivery above this amount
+    deliveryCharge: 0,       // ₹ — Always free delivery
     estimatedDeliveryTime: '30–45 minutes',
 
     // Currency
@@ -28,11 +27,8 @@ export const SHOP_CONFIG = {
  * Meat categories for grouping products on homepage.
  */
 export const CATEGORIES = [
-    { id: 'chicken', name: 'Chicken', emoji: '🍗', description: 'Fresh broiler chicken cuts' },
-    { id: 'kadai', name: 'Country Chicken', emoji: '🐔', description: 'Free-range country chicken' },
-    { id: 'beef', name: 'Beef', emoji: '🥩', description: 'Premium quality beef' },
-    { id: 'mutton', name: 'Mutton', emoji: '🍖', description: 'Tender goat meat' },
-    { id: 'fish', name: 'Fish', emoji: '🐟', description: 'Fresh catch of the day' },
+    { id: 'chicken', name: 'Chicken', image: '/assets/images/Category images/chicken.avif', description: 'Fresh broiler chicken cuts' },
+    { id: 'kadai', name: 'Quail', image: '/assets/images/Category images/quail.png', description: 'Fresh quail — kaadai' },
 ] as const;
 
 /**

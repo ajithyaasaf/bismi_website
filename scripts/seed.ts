@@ -31,7 +31,7 @@ const MEAT_TYPES = [
     {
         name: 'Chicken Breast',
         pricePerKg: 280,
-        imageURL: 'https://images.unsplash.com/photo-1604503468506-a8da13d82571?w=400&q=80',
+        imageURL: '/assets/images/Product images/chicken/Chicken Breasts.png',
         description: 'Boneless chicken breast, tender and lean. Perfect for grilling.',
         category: 'chicken',
         isActive: true,
@@ -39,7 +39,7 @@ const MEAT_TYPES = [
     {
         name: 'Chicken Curry Cut',
         pricePerKg: 220,
-        imageURL: 'https://images.unsplash.com/photo-1587593810167-a84920ea0781?w=400&q=80',
+        imageURL: '/assets/images/Product images/chicken/Curry Cuts.png',
         description: 'Fresh chicken cut into curry-sized pieces with bone.',
         category: 'chicken',
         isActive: true,
@@ -47,7 +47,7 @@ const MEAT_TYPES = [
     {
         name: 'Chicken Leg',
         pricePerKg: 240,
-        imageURL: 'https://images.unsplash.com/photo-1610057099443-fde6c99db9e1?w=400&q=80',
+        imageURL: '/assets/images/Product images/chicken/Leg piece.png',
         description: 'Juicy chicken legs, great for roasting and frying.',
         category: 'chicken',
         isActive: true,
@@ -55,16 +55,16 @@ const MEAT_TYPES = [
     {
         name: 'Chicken Wings',
         pricePerKg: 200,
-        imageURL: 'https://images.unsplash.com/photo-1527477396000-e27163b481c2?w=400&q=80',
+        imageURL: '/assets/images/Product images/chicken/Chicken Wings.png',
         description: 'Crispy chicken wings, perfect for snacks and appetizers.',
         category: 'chicken',
         isActive: true,
     },
     {
-        name: 'Country Chicken (Kadai)',
+        name: 'Kaadai (Quail)',
         pricePerKg: 550,
-        imageURL: 'https://images.unsplash.com/photo-1501200291289-c5a76c232e5f?w=400&q=80',
-        description: 'Free-range country chicken. Rich flavor, traditional taste.',
+        imageURL: '/assets/images/Product images/Quail/quail.webp',
+        description: 'Fresh farm raised Kaadai (Quail). Nutrient-rich and delicious.',
         category: 'kadai',
         isActive: true,
     },
