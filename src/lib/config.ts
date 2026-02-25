@@ -27,8 +27,8 @@ export const SHOP_CONFIG = {
  * Meat categories for grouping products on homepage.
  */
 export const CATEGORIES = [
-    { id: 'chicken', name: 'Chicken', image: '/assets/images/Category images/chicken.avif', description: 'Fresh broiler chicken cuts' },
-    { id: 'kadai', name: 'Quail', image: '/assets/images/Category images/quail.png', description: 'Fresh quail — kaadai' },
+    { id: 'chicken', name: 'Chicken', emoji: '🐔', image: '/assets/images/Category images/chicken.avif', description: 'Fresh broiler chicken cuts' },
+    { id: 'kadai', name: 'Quail', emoji: '🐦', image: '/assets/images/Category images/quail.png', description: 'Fresh quail — kaadai' },
 ] as const;
 
 /**
@@ -36,7 +36,17 @@ export const CATEGORIES = [
  */
 export const STATUS_CONFIG = {
     pending: { label: 'Pending', color: 'bg-amber-100 text-amber-800', dot: 'bg-amber-500' },
+    confirmed: { label: 'Confirmed', color: 'bg-purple-100 text-purple-800', dot: 'bg-purple-500' },
     accepted: { label: 'Accepted', color: 'bg-blue-100 text-blue-800', dot: 'bg-blue-500' },
     delivered: { label: 'Delivered', color: 'bg-green-100 text-green-800', dot: 'bg-green-500' },
     cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-800', dot: 'bg-red-500' },
 } as const;
+
+/**
+ * Predefined delivery time slots for customer checkout.
+ */
+export const DELIVERY_SLOTS = [
+    'Morning (7AM – 10AM)',
+    'Afternoon (12PM – 3PM)',
+    'Evening (4PM – 7PM)',
+] as const;

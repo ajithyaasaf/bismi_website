@@ -6,8 +6,8 @@ import Link from 'next/link';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Order, OrderStatus } from '@/types';
-import { STATUS_CONFIG } from '@/lib/config';
-import { formatCurrency, formatDate } from '@/lib/utils';
+import { STATUS_CONFIG, SHOP_CONFIG } from '@/lib/config';
+import { formatCurrency, formatDate, buildWhatsAppOrderUrl } from '@/lib/utils';
 import LoadingSpinner from '@/components/LoadingSpinner';
 
 /**
@@ -15,8 +15,9 @@ import LoadingSpinner from '@/components/LoadingSpinner';
  * Only allowed transitions are defined here.
  */
 const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
-    [OrderStatus.PENDING]: [OrderStatus.ACCEPTED, OrderStatus.CANCELLED],
-    [OrderStatus.ACCEPTED]: [OrderStatus.DELIVERED, OrderStatus.CANCELLED],
+    [OrderStatus.PENDING]: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
+    [OrderStatus.CONFIRMED]: [OrderStatus.ACCEPTED, OrderStatus.CANCELLED],
+    [OrderStatus.ACCEPTED]: [OrderStatus.DELIVERED],
     [OrderStatus.DELIVERED]: [],
     [OrderStatus.CANCELLED]: [],
 };
@@ -144,6 +145,12 @@ export default function OrderDetailPage() {
                             <p className="font-medium text-gray-900">{order.address}</p>
                         </div>
                     )}
+                    {order.deliveryTimeSlot && (
+                        <div>
+                            <span className="text-gray-400">Delivery Slot</span>
+                            <p className="font-medium text-gray-900">{order.deliveryTimeSlot}</p>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -156,7 +163,9 @@ export default function OrderDetailPage() {
                             <div>
                                 <p className="font-medium text-gray-900">{item.meatName}</p>
                                 <p className="text-xs text-gray-400">
-                                    {item.kg} kg × {formatCurrency(item.pricePerKg)}/kg
+                                    {item.unit === 'piece'
+                                        ? `${item.pieces ?? 0} pcs × ${formatCurrency(item.pricePerPiece ?? 0)}/pc`
+                                        : `${item.kg ?? 0} kg × ${formatCurrency(item.pricePerKg ?? 0)}/kg`}
                                 </p>
                             </div>
                             <span className="font-semibold text-gray-900">{formatCurrency(item.subtotal)}</span>
@@ -182,6 +191,29 @@ export default function OrderDetailPage() {
                 </div>
             </div>
 
+            {/* Contact Shortcuts — visible for pending / confirmed orders */}
+            {(order.status === OrderStatus.PENDING || order.status === OrderStatus.CONFIRMED) && (
+                <div className="bg-white rounded-xl border border-gray-100 p-5 mb-4">
+                    <h2 className="text-sm font-bold text-gray-900 mb-3">Contact Customer</h2>
+                    <div className="flex flex-wrap gap-3">
+                        <a
+                            href={`tel:+91${order.mobile}`}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold bg-gray-100 text-gray-800 rounded-xl hover:bg-gray-200 active:scale-[0.97] transition-all"
+                        >
+                            📞 Call Customer
+                        </a>
+                        <a
+                            href={buildWhatsAppOrderUrl(order)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 px-5 py-2.5 text-sm font-semibold bg-green-50 text-green-700 border border-green-200 rounded-xl hover:bg-green-100 active:scale-[0.97] transition-all"
+                        >
+                            💬 WhatsApp Customer
+                        </a>
+                    </div>
+                </div>
+            )}
+
             {/* Status Actions */}
             {allowedNextStatuses.length > 0 && (
                 <div className="bg-white rounded-xl border border-gray-100 p-5">
@@ -193,15 +225,18 @@ export default function OrderDetailPage() {
                             .filter((s) => s !== OrderStatus.CANCELLED)
                             .map((status) => {
                                 const conf = STATUS_CONFIG[status];
+                                const btnStyle =
+                                    status === OrderStatus.CONFIRMED
+                                        ? 'bg-purple-600 text-white hover:bg-purple-700'
+                                        : status === OrderStatus.ACCEPTED
+                                            ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                            : 'bg-green-600 text-white hover:bg-green-700';
                                 return (
                                     <button
                                         key={status}
                                         onClick={() => handleStatusChange(status)}
                                         disabled={updating}
-                                        className={`px-5 py-2.5 text-sm font-semibold rounded-xl transition-all disabled:opacity-50 ${status === OrderStatus.ACCEPTED
-                                                ? 'bg-blue-600 text-white hover:bg-blue-700 active:scale-[0.97]'
-                                                : 'bg-green-600 text-white hover:bg-green-700 active:scale-[0.97]'
-                                            }`}
+                                        className={`px-5 py-2.5 text-sm font-semibold rounded-xl transition-all disabled:opacity-50 active:scale-[0.97] ${btnStyle}`}
                                     >
                                         {updating ? '...' : `Mark as ${conf.label}`}
                                     </button>

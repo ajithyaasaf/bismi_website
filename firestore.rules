@@ -32,12 +32,17 @@ service cloud.firestore {
         && request.resource.data.totalAmount is number
         && request.resource.data.totalAmount > 0;
 
-      // Only authenticated admin can read orders
-      allow read: if request.auth != null;
+      // Allow users to read their own orders if they query by mobile number
+      allow read: if request.auth != null || 
+                     (request.query != null && 
+                      request.query.limit <= 1 && 
+                      request.query.filters.size() == 1 &&
+                      request.query.filters[0].op == '==' &&
+                      request.query.filters[0].field == 'mobile');
 
       // Only authenticated admin can update status (with strict enum)
       allow update: if request.auth != null
-        && request.resource.data.status in ['pending', 'accepted', 'delivered', 'cancelled'];
+        && request.resource.data.status in ['pending', 'confirmed', 'accepted', 'delivered', 'cancelled'];
 
       // No one can delete orders
       allow delete: if false;

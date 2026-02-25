@@ -36,9 +36,15 @@ export default function Header() {
                     <nav className="flex items-center gap-1 sm:gap-2">
                         <Link
                             href="/menu"
-                            className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                            className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all whitespace-nowrap"
                         >
                             Menu
+                        </Link>
+                        <Link
+                            href="/track-order"
+                            className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all whitespace-nowrap"
+                        >
+                            Track Order
                         </Link>
                         <Link
                             href="/cart"

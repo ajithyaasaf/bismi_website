@@ -3,6 +3,7 @@ import { Timestamp } from 'firebase/firestore';
 // ─── Enums ───────────────────────────────────────────────
 export enum OrderStatus {
   PENDING = 'pending',
+  CONFIRMED = 'confirmed',
   ACCEPTED = 'accepted',
   DELIVERED = 'delivered',
   CANCELLED = 'cancelled',
@@ -25,6 +26,9 @@ export interface MeatType {
   category: string;
   isActive: boolean;
   updatedAt: Timestamp;
+  // Daily availability (admin-toggled)
+  todayAvailable?: boolean;
+  todayLabel?: string;      // e.g. "Fresh Cut Today"
 }
 
 export interface OrderItem {
@@ -53,6 +57,7 @@ export interface Order {
   deliveryType: DeliveryType;
   address: string;
   status: OrderStatus;
+  deliveryTimeSlot?: string;  // e.g. "Morning (7AM – 10AM)"
   idempotencyToken: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;

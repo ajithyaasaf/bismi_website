@@ -62,7 +62,7 @@ export default function OrderConfirmationPage() {
 
                 <h1 className="text-2xl font-bold text-gray-900 mb-2">Order Placed!</h1>
                 <p className="text-gray-500 mb-6">
-                    Your order has been received. We&apos;ll prepare it right away.
+                    We&apos;ll call or WhatsApp you shortly to confirm your order before preparation.
                 </p>
 
                 {/* Order ID Card */}
@@ -122,9 +122,18 @@ export default function OrderConfirmationPage() {
                         Confirm via WhatsApp
                     </a>
 
+                    {order?.mobile && (
+                        <Link
+                            href={`/track-order?mobile=${order.mobile}`}
+                            className="flex items-center justify-center gap-2 w-full py-3.5 bg-gray-900 text-white font-bold rounded-xl hover:bg-black active:scale-[0.98] transition-all shadow-md shadow-gray-200"
+                        >
+                            Track Order Status
+                        </Link>
+                    )}
+
                     <Link
                         href="/"
-                        className="block w-full py-3 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
+                        className="block w-full py-3 text-center text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
                     >
                         ← Back to Home
                     </Link>

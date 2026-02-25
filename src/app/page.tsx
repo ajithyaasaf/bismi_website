@@ -3,6 +3,7 @@ import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import CloudinaryVideo from '@/components/CloudinaryVideo';
+import TodayAvailableStrip from '@/components/TodayAvailableStrip';
 import { SHOP_CONFIG, CATEGORIES } from '@/lib/config';
 
 export default function HomePage() {
@@ -18,7 +19,8 @@ export default function HomePage() {
           />
         </section>
 
-        {/* ─── Categories Section ────────────────── */}
+        {/* ─── Today Available Strip ──────────────── */}
+        <TodayAvailableStrip />
         <section className="max-w-7xl mx-auto px-4 py-12">
           <div className="text-center mb-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">What&apos;s on the Menu?</h2>
