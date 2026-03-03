@@ -14,6 +14,19 @@ export enum DeliveryType {
   DELIVERY = 'delivery',
 }
 
+// ─── Slot Control Types ─────────────────────────────────
+export type SlotKey = '6-8' | '8-10' | '10-12' | '12-2' | '5-7' | '7-8';
+
+export interface SlotConfig {
+  enabled: boolean;
+  maxOrders: number;
+}
+
+export interface DailySlotControl {
+  shopClosed: boolean;
+  slots: Record<SlotKey, SlotConfig>;
+}
+
 // ─── Firestore Document Types ────────────────────────────
 export interface MeatType {
   id: string;
@@ -29,6 +42,7 @@ export interface MeatType {
   // Daily availability (admin-toggled)
   todayAvailable?: boolean;
   todayLabel?: string;      // e.g. "Fresh Cut Today"
+  isAvailableToday?: boolean; // Controls temporary daily availability
 }
 
 export interface OrderItem {
@@ -57,7 +71,9 @@ export interface Order {
   deliveryType: DeliveryType;
   address: string;
   status: OrderStatus;
-  deliveryTimeSlot?: string;  // e.g. "Morning (7AM – 10AM)"
+  deliveryTimeSlot?: string;  // e.g. "Morning (7AM – 10AM)" — kept for backward compat
+  deliveryDate?: string;      // 'YYYY-MM-DD' — new: for slot control counting
+  deliverySlot?: string;      // slot key e.g. '8-10' — new: for slot control counting
   idempotencyToken: string;
   createdAt: Timestamp;
   updatedAt: Timestamp;

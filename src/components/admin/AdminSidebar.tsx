@@ -17,6 +17,17 @@ const NAV_ITEMS = [
         exact: true,
     },
     {
+        href: '/admin/products',
+        label: 'Products',
+        icon: (
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
+                <path d="M2 3a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1H2Z" />
+                <path fillRule="evenodd" d="M2 7.5h16l-.811 7.71a2 2 0 0 1-1.99 1.79H4.802a2 2 0 0 1-1.99-1.79L2 7.5Zm5.22 1.72a.75.75 0 0 1 1.06 0L10 10.94l1.72-1.72a.75.75 0 1 1 1.06 1.06L11.06 12l1.72 1.72a.75.75 0 1 1-1.06 1.06L10 13.06l-1.72 1.72a.75.75 0 0 1-1.06-1.06L8.94 12 7.22 10.28a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+            </svg>
+        ),
+        exact: false,
+    },
+    {
         href: '/admin/orders',
         label: 'Orders',
         icon: (
@@ -27,6 +38,7 @@ const NAV_ITEMS = [
         exact: false,
     },
 ];
+
 
 export default function AdminSidebar() {
     const pathname = usePathname();
@@ -52,8 +64,8 @@ export default function AdminSidebar() {
                             key={item.href}
                             href={item.href}
                             className={`flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${isActive(item.href, item.exact)
-                                    ? 'bg-red-50 text-red-700'
-                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                ? 'bg-red-50 text-red-700'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                 }`}
                         >
                             {item.icon}
@@ -83,8 +95,8 @@ export default function AdminSidebar() {
                         key={item.href}
                         href={item.href}
                         className={`flex-1 flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors ${isActive(item.href, item.exact)
-                                ? 'text-red-600'
-                                : 'text-gray-400'
+                            ? 'text-red-600'
+                            : 'text-gray-400'
                             }`}
                     >
                         {item.icon}

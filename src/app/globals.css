@@ -19,6 +19,16 @@
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
+/* ─── Scrollbar Lock Fix ────────────────────────────────────────────────────
+   Always reserve the scrollbar gutter on desktop so that when a modal/sheet
+   opens and locks body scroll (hiding the scrollbar), the page width never
+   changes — eliminating layout shift entirely.
+   On mobile, scrollbars are overlaid so this has zero visual effect there.
+────────────────────────────────────────────────────────────────────────────── */
+html {
+  scrollbar-gutter: stable;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -33,6 +43,7 @@ body {
     transform: translateY(100%);
     opacity: 0;
   }
+
   to {
     transform: translateY(0);
     opacity: 1;
@@ -40,13 +51,25 @@ body {
 }
 
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes pulse-soft {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.6;
+  }
 }
 
 .animate-slide-up {
@@ -69,8 +92,13 @@ body {
 }
 
 @keyframes skeleton-shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* ─── Custom Scrollbar ────────────────────── */
@@ -92,7 +120,9 @@ body {
 }
 
 /* ─── Input Focus Ring ────────────────────── */
-input:focus, select:focus, textarea:focus {
+input:focus,
+select:focus,
+textarea:focus {
   outline: none;
   border-color: var(--brand-red);
   box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);

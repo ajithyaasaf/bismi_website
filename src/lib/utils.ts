@@ -125,8 +125,11 @@ export function buildWhatsAppOrderUrl(order: Order): string {
         ? 'Pickup from shop'
         : `Home delivery${order.deliveryTimeSlot ? ` (${order.deliveryTimeSlot})` : ''}`;
 
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const trackingUrl = `${baseUrl}/track-order?mobile=${order.mobile}`;
+
     const message = encodeURIComponent(
-        `Hi ${order.customerName || 'there'},\n\nYour order from ${SHOP_CONFIG.name} is confirmed!\n\nOrder Details:\n${itemLines}\n\nDelivery: ${deliveryLabel}\nTotal: ₹${order.totalAmount.toFixed(2)}\n\nWe will prepare your order shortly.`
+        `Hi ${order.customerName || 'there'},\n\nYour order from ${SHOP_CONFIG.name} is confirmed!\n\nOrder Details:\n${itemLines}\n\nDelivery: ${deliveryLabel}\nTotal: ₹${order.totalAmount.toFixed(2)}\n\nWe will prepare your order shortly.\n\nTrack your order here:\n${trackingUrl}`
     );
     return `https://wa.me/91${order.mobile}?text=${message}`;
 }

@@ -7,6 +7,7 @@ import { db } from '@/lib/firebase';
 import { OrderStatus } from '@/types';
 import { STATUS_CONFIG } from '@/lib/config';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import DeliverySlotControl from '@/components/admin/DeliverySlotControl';
 
 interface DashboardStats {
     total: number;
@@ -134,6 +135,9 @@ export default function AdminDashboard() {
                             </Link>
                         </div>
                     </div>
+
+                    {/* Today's Delivery Slot Control */}
+                    <DeliverySlotControl />
                 </>
             )}
         </div>
