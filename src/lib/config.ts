@@ -16,7 +16,7 @@ export const SHOP_CONFIG = {
     // Order rules
     minimumOrderAmount: 100, // ₹
     deliveryCharge: 0,       // ₹ — Always free delivery
-    estimatedDeliveryTime: '30–45 minutes',
+    estimatedDeliveryTime: 'Fastest Delivery',
 
     // Currency
     currency: '₹',
@@ -38,7 +38,7 @@ export const CHICKEN_GROUPS = [
     },
     {
         label: 'Country & Whole',
-        names: ['Country Chicken (Nattu Kozhi)']
+        names: ['Country Chicken (Naatu Kozhi)']
     },
 ];
 
@@ -47,7 +47,7 @@ export const CHICKEN_GROUPS = [
  */
 export const CATEGORIES = [
     { id: 'chicken', name: 'Chicken', emoji: '🐔', image: '/assets/images/Category images/chicken.avif', description: 'Fresh broiler chicken cuts' },
-    { id: 'kadai', name: 'Quail', emoji: '🐦', image: '/assets/images/Category images/quail.png', description: 'Fresh quail — kaadai' },
+    { id: 'kadai', name: 'Kaadai', emoji: '🐦', image: '/assets/images/Category images/quail.png', description: 'Fresh kaadai eggs' },
 ] as const;
 
 /**

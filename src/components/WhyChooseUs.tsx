@@ -34,7 +34,7 @@ export default function WhyChooseUs() {
                                 {
                                     step: "03",
                                     title: 'Fast, Free Delivery',
-                                    desc: `Delivered to your doorstep in ${SHOP_CONFIG.estimatedDeliveryTime}, absolutely free.`,
+                                    desc: `Fastest delivery to your doorstep, absolutely free.`,
                                     icon: '🛵'
                                 },
                             ].map((item, index) => (
@@ -86,7 +86,7 @@ export default function WhyChooseUs() {
                                         </div>
                                         <div>
                                             <p className="font-bold text-lg">{SHOP_CONFIG.estimatedDeliveryTime}</p>
-                                            <p className="text-sm text-red-200">Average Delivery Time</p>
+                                            <p className="text-sm text-red-200">Guaranteed Service</p>
                                         </div>
                                     </div>
 

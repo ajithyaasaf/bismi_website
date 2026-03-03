@@ -32,12 +32,13 @@ export interface MeatType {
   id: string;
   name: string;
   pricePerKg: number;       // For kg-based products
-  pricePerPiece?: number;   // For piece-based products (e.g. Quail)
+  pricePerPiece?: number;   // For piece-based products (e.g. Kaadai)
   unit: 'kg' | 'piece';    // Determines which UI/model to use
   imageURL: string;
   description: string;
   category: string;
   isActive: boolean;
+  localName?: string;       // Optional regional/Tamil display name (e.g. "சிக்கன் கறி கட்")
   updatedAt: Timestamp;
   // Daily availability (admin-toggled)
   todayAvailable?: boolean;
@@ -55,7 +56,7 @@ export interface OrderItem {
   // Price locked at time of order:
   pricePerKg?: number;
   pricePerPiece?: number;
-  // Optional cutting preference (used for quail):
+  // Optional cutting preference (used for kaadai):
   cuttingPreference?: string;
   subtotal: number;
 }
@@ -90,7 +91,7 @@ export interface CartItem {
   // One of these will be set:
   pricePerKg?: number;
   pricePerPiece?: number;
-  // Optional cutting preference (for quail):
+  // Optional cutting preference (for kaadai):
   cuttingPreference?: string;
   imageURL: string;
 }

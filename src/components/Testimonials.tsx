@@ -1,6 +1,12 @@
 export default function Testimonials() {
     const reviews = [
         {
+            name: "Fathima",
+            text: "Very affordable pricing, same rates as the physical shop! The meat is extremely fresh and delivered with great care.",
+            rating: 5,
+            tag: "Verified Buyer"
+        },
+        {
             name: "Sarah M.",
             text: "Always tender and hygienically packed. The best chicken I've ordered in town. Delivery is super fast too!",
             rating: 5,
@@ -9,12 +15,6 @@ export default function Testimonials() {
         {
             name: "Rajesh K.",
             text: "No more messy market visits. The meat comes perfectly cleaned and custom cut just the way my mom likes it.",
-            rating: 5,
-            tag: "Verified Buyer"
-        },
-        {
-            name: "Priya T.",
-            text: "I was skeptical about buying raw meat online, but the quality here is excellent. No strange smells, very fresh.",
             rating: 5,
             tag: "Verified Buyer"
         }

@@ -76,7 +76,7 @@ export default function CartPage() {
                                     <h3 className="text-sm font-bold text-gray-900 truncate">{item.meatName}</h3>
                                     <p className="text-xs text-gray-400 mt-0.5">{priceDisplay}</p>
 
-                                    {/* Cutting preference badge for quail */}
+                                    {/* Cutting preference badge for kaadai */}
                                     {item.cuttingPreference && (
                                         <span className="inline-block mt-1 text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200 rounded-full px-2 py-0.5">
                                             {item.cuttingPreference}

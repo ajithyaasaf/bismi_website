@@ -104,7 +104,7 @@ export default function OrderConfirmationPage() {
                 {/* Estimated Time */}
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
                     <p className="text-sm text-blue-800">
-                        <strong>Estimated time:</strong> {SHOP_CONFIG.estimatedDeliveryTime}
+                        <strong>Delivery:</strong> {SHOP_CONFIG.estimatedDeliveryTime}
                     </p>
                 </div>
 

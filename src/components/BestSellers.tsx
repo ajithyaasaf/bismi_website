@@ -1,11 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { collection, query, where, limit, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '@/lib/firebase';
 import { MeatType } from '@/types';
 import ProductCard from './ProductCard';
 import Link from 'next/link';
+
+// ── Pinned best-seller names — edit this list to change what shows ────────────
+const BEST_SELLER_NAMES = [
+    'Chicken Curry Cut',
+    'Chicken Biriyani Cut',
+    'Chicken Boneless',
+    'Country Chicken (Naatu Kozhi)',
+];
 
 export default function BestSellers() {
     const [products, setProducts] = useState<MeatType[]>([]);
@@ -21,36 +29,34 @@ export default function BestSellers() {
             }
 
             try {
-                // Fetching 4 active products to simulate best sellers
+                // Fetch exactly the pinned flagship cuts — no random ordering
                 const q = query(
                     collection(db, 'meatTypes'),
+                    where('name', 'in', BEST_SELLER_NAMES),
                     where('isActive', '==', true),
-                    limit(4)
                 );
 
                 const snapshot = await getDocs(q);
-                const results = snapshot.docs.map(doc => ({
+                const fetched = snapshot.docs.map(doc => ({
                     id: doc.id,
-                    ...doc.data()
+                    ...doc.data(),
                 })) as MeatType[];
 
-                if (isMounted) {
-                    setProducts(results);
-                }
+                // Preserve pinned display order
+                const ordered = BEST_SELLER_NAMES
+                    .map(name => fetched.find(p => p.name === name))
+                    .filter(Boolean) as MeatType[];
+
+                if (isMounted) setProducts(ordered);
             } catch (error) {
-                console.error("Error fetching best sellers:", error);
+                console.error('Error fetching best sellers:', error);
             } finally {
-                if (isMounted) {
-                    setIsLoading(false);
-                }
+                if (isMounted) setIsLoading(false);
             }
         }
 
         fetchBestSellers();
-
-        return () => {
-            isMounted = false;
-        };
+        return () => { isMounted = false; };
     }, []);
 
     if (isLoading) {
@@ -59,21 +65,19 @@ export default function BestSellers() {
                 <div className="flex justify-between items-end mb-6">
                     <div>
                         <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Weekly Best Sellers</h2>
-                        <p className="text-gray-500 text-sm sm:text-base">Customer favorites this week</p>
+                        <p className="text-gray-500 text-sm sm:text-base">Customer favorites, cut fresh every day</p>
                     </div>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                     {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="bg-gray-50 animate-pulse rounded-2xl aspect-[3/4] border border-gray-100"></div>
+                        <div key={i} className="bg-gray-50 animate-pulse rounded-2xl aspect-[3/4] border border-gray-100" />
                     ))}
                 </div>
             </section>
         );
     }
 
-    if (products.length === 0) {
-        return null;
-    }
+    if (products.length === 0) return null;
 
     return (
         <section className="max-w-7xl mx-auto px-4 py-8 sm:py-12 border-b border-gray-100">

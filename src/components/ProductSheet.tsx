@@ -19,9 +19,9 @@ const PRODUCT_METADATA: Record<string, { bestFor: string[]; serves: string; fres
     'Chicken Wings': { bestFor: ['BBQ', 'Fry', 'Party Snack'], serves: '5–6 wings / kg', freshTag: 'Party Pick' },
     'Chicken Lollipop': { bestFor: ['Party Starter', 'Fry', 'BBQ'], serves: '5–6 pieces / kg', freshTag: 'Party Pick' },
     'Chicken Keema': { bestFor: ['Kottu', 'Paratha', 'Rolls'], serves: '4–5 people / kg', freshTag: 'Versatile' },
-    'Country Chicken (Nattu Kozhi)': { bestFor: ['Nattu Kozhi Curry', 'Soup', 'Country Gravy'], serves: '4–5 people / kg', freshTag: 'Farm Fresh' },
+    'Country Chicken (Naatu Kozhi)': { bestFor: ['Naatu Kozhi Curry', 'Soup', 'Country Gravy'], serves: '4–5 people / kg', freshTag: 'Farm Fresh' },
     'White Egg': { bestFor: ['Breakfast', 'Omelette', 'Baking'], serves: '1 egg per person', freshTag: 'Farm Fresh' },
-    'Quail Egg': { bestFor: ['Boiled', 'Curry', 'Snack'], serves: '2–3 eggs per person', freshTag: 'Rich Protein' },
+    'Kaadai Egg': { bestFor: ['Boiled', 'Curry', 'Snack'], serves: '2–3 eggs per person', freshTag: 'Rich Protein' },
 };
 
 const DEFAULT_METADATA = { bestFor: ['Curry', 'Gravy', 'Fry'], serves: '3–4 people / kg', freshTag: 'Fresh Today' };
@@ -29,7 +29,7 @@ const DEFAULT_METADATA = { bestFor: ['Curry', 'Gravy', 'Fry'], serves: '3–4 pe
 // ─── Trust Badges ────────────────────────────────────────────────────────────
 const TRUST_BADGES = [
     { icon: '✅', label: 'Fresh Daily' },
-    { icon: '🧹', label: 'Cleaned & Ready' },
+    { icon: '🔪', label: 'Cleaned & Cut' },
     { icon: '🚫', label: 'No Preservatives' },
 ];
 
@@ -146,9 +146,14 @@ export default function ProductSheet({ product, isOpen, onClose, onAdd }: Produc
                     <div className="p-4 space-y-4">
 
                         {/* Name */}
-                        <h2 className="text-xl font-extrabold text-gray-900 leading-tight">
-                            {product.name}
-                        </h2>
+                        <div>
+                            <h2 className="text-xl font-extrabold text-gray-900 leading-tight">
+                                {product.name}
+                            </h2>
+                            {product.localName && (
+                                <p className="text-sm font-semibold text-red-500/80 mt-0.5" lang="ta">{product.localName}</p>
+                            )}
+                        </div>
 
                         {/* Best For Recipe Tags */}
                         <div>
@@ -193,8 +198,8 @@ export default function ProductSheet({ product, isOpen, onClose, onAdd }: Produc
                         onClick={onAdd}
                         disabled={!isAvailableToday}
                         className={`w-full py-3.5 text-base font-extrabold rounded-2xl shadow-md transition-all focus:outline-none focus:ring-4 focus:ring-red-500/20 ${isAvailableToday
-                                ? 'text-white bg-red-600 hover:bg-red-700 active:bg-red-800'
-                                : 'text-gray-400 bg-gray-100 cursor-not-allowed border border-gray-200'
+                            ? 'text-white bg-red-600 hover:bg-red-700 active:bg-red-800'
+                            : 'text-gray-400 bg-gray-100 cursor-not-allowed border border-gray-200'
                             }`}
                     >
                         {isAvailableToday ? 'Add to Cart 🛒' : 'Currently Unavailable'}

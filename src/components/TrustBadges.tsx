@@ -31,12 +31,11 @@ export default function TrustBadges() {
         {
             icon: (
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-amber-600 mb-3">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 0 1-3 0m3 0a1.5 1.5 0 0 0-3 0m3 0h1.125c.621 0 1.129-.504 1.129-1.125V11.25a9 9 0 0 0-9-9h-2.25a1.125 1.125 0 0 0-1.125 1.125v2.25M16.5 18.75V15.75L12 15.75m6.375-9.75H12M12 15.75V1.5m-3.375 14.25h1.125" />
                 </svg>
-
             ),
-            title: "Temperature Controlled",
-            description: "Kept fresh at 0°C - 4°C"
+            title: "Delivery at your doorstep",
+            description: "Fast & fresh home delivery"
         }
     ];
 

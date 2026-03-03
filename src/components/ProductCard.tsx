@@ -92,7 +92,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                             </div>
                         )}
 
-                        {/* "Per piece" badge for quail/eggs */}
+                        {/* "Per piece" badge for kaadai/eggs */}
                         {isPerPiece && !(!isAvailableToday) && (
                             <span className="absolute top-2 left-2 bg-amber-100 text-amber-700 text-[10px] sm:text-xs font-bold px-2 py-0.5 sm:px-3 sm:py-1 rounded-full shadow-sm">
                                 Per Piece
@@ -111,7 +111,10 @@ export default function ProductCard({ product }: ProductCardProps) {
 
                     {/* Content */}
                     <div className="p-3 sm:p-4 flex-1 flex flex-col">
-                        <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-1 line-clamp-2 leading-tight group-hover:text-red-600 transition-colors">{product.name}</h3>
+                        <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-0.5 line-clamp-2 leading-tight group-hover:text-red-600 transition-colors">{product.name}</h3>
+                        {product.localName && (
+                            <p className="text-[11px] sm:text-xs font-medium text-red-500/80 mb-1 leading-tight" lang="ta">{product.localName}</p>
+                        )}
                         <p className="text-[11px] sm:text-xs text-gray-500 mb-3 line-clamp-2 flex-1 leading-snug">{product.description}</p>
 
                         {/* Spacer pushing price to bottom if description is short */}
