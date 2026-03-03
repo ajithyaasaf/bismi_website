@@ -176,18 +176,18 @@ export default function AdminProductsPage() {
                         {/* Active badge */}
                         <span
                             className={`hidden sm:inline-flex shrink-0 text-xs font-medium px-2.5 py-1 rounded-full ${product.isActive
-                                    ? 'bg-green-50 text-green-700'
-                                    : 'bg-gray-100 text-gray-500'
+                                ? 'bg-green-50 text-green-700'
+                                : 'bg-gray-100 text-gray-500'
                                 }`}
                         >
                             {product.isActive ? 'Active' : 'Inactive'}
                         </span>
 
                         {/* Toggle switches wrapper */}
-                        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3 ml-2">
+                        <div className="flex flex-col sm:flex-row items-end sm:items-center gap-3 sm:gap-6 ml-2 sm:ml-4">
                             {/* Active Toggle */}
                             <div className="flex items-center gap-2">
-                                <span className="text-xs font-medium text-gray-500 w-16 text-right sm:hidden">Existence</span>
+                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest text-right">Catalog</span>
                                 <button
                                     role="switch"
                                     aria-checked={product.isActive}
@@ -205,9 +205,9 @@ export default function AdminProductsPage() {
                             </div>
 
                             {/* Available Today Toggle */}
-                            {product.isActive && (
+                            {product.isActive ? (
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xs font-medium text-gray-500 w-16 text-right sm:hidden">Today</span>
+                                    <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest text-right">Today</span>
                                     <button
                                         role="switch"
                                         aria-checked={product.isAvailableToday !== false} // Treats undefined as true
@@ -223,6 +223,8 @@ export default function AdminProductsPage() {
                                         />
                                     </button>
                                 </div>
+                            ) : (
+                                <div className="w-[88px] hidden sm:block"></div> // Placeholder to keep alignment when hidden
                             )}
                         </div>
                     </div>
