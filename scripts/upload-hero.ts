@@ -18,7 +18,7 @@ async function uploadVideo() {
 
     try {
         const result = await cloudinary.uploader.upload(videoPath, {
-            public_id: 'hero_banner_video',
+            public_id: 'hero_banner_video_v2',
             folder: 'bismi-broilers',
             overwrite: true,
             resource_type: 'video', // Important for videos

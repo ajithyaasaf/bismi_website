@@ -19,7 +19,7 @@ export default function HomePage() {
           {/* Desktop Banner Video (Cloudinary) */}
           <div className="hidden sm:block">
             <CloudinaryVideo
-              publicId="bismi-broilers/hero_banner_video"
+              publicId="bismi-broilers/hero_banner_video_v2"
               className="w-full h-auto block"
             />
           </div>

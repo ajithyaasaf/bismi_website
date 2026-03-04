@@ -12,7 +12,7 @@ const BEST_SELLER_NAMES = [
     'Chicken Curry Cut',
     'Chicken Biriyani Cut',
     'Chicken Boneless',
-    'Country Chicken (Naatu Kozhi)',
+    'Country Chicken (Nattu Kozhi)',
 ];
 
 export default function BestSellers() {
