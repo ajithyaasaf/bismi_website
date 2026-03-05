@@ -111,52 +111,51 @@ export default function ProductCard({ product }: ProductCardProps) {
 
                     {/* Content */}
                     <div className="p-3 sm:p-4 flex-1 flex flex-col">
-                        <h3 className="text-sm sm:text-base font-bold text-gray-900 mb-0.5 line-clamp-2 leading-tight group-hover:text-red-600 transition-colors">{product.name}</h3>
+                        <h3 className="text-[13px] sm:text-base font-bold text-gray-900 mb-0.5 line-clamp-2 leading-tight group-hover:text-red-600 transition-colors">{product.name}</h3>
                         {product.localName && (
-                            <p className="text-[11px] sm:text-xs font-medium text-red-500/80 mb-1 leading-tight" lang="ta">{product.localName}</p>
+                            <p className="text-[10px] sm:text-xs font-medium text-red-500/80 mb-1 leading-tight" lang="ta">{product.localName}</p>
                         )}
-                        <p className="text-[11px] sm:text-xs text-gray-500 mb-3 line-clamp-2 flex-1 leading-snug">{product.description}</p>
-
-                        {/* Spacer pushing price to bottom if description is short */}
+                        <p className="text-[10px] sm:text-xs text-gray-500 line-clamp-2 flex-1 leading-snug">{product.description}</p>
                         <div className="mt-auto"></div>
                     </div>
                 </div>
 
-                {/* Fixed Bottom action area (isolated click target) */}
-                <div className="p-3 sm:p-4 pt-0">
-                    <div className="flex items-end justify-between gap-2">
-                        <div className="flex-1">
-                            {isPerPiece ? (
-                                <div className="leading-none">
-                                    <span className="text-lg sm:text-xl font-extrabold text-red-600">
-                                        {formatCurrency(product.pricePerPiece ?? 0)}
-                                    </span>
-                                    <span className="text-[10px] sm:text-xs font-medium text-gray-400 ml-1">/pc</span>
-                                </div>
-                            ) : (
-                                <div className="leading-none">
-                                    <span className="text-lg sm:text-xl font-extrabold text-red-600">
-                                        {formatCurrency(product.pricePerKg)}
-                                    </span>
-                                    <span className="text-[10px] sm:text-xs font-medium text-gray-400 ml-1">/kg</span>
-                                </div>
-                            )}
-                        </div>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                if (isAvailableToday) setShowSelector(true);
-                            }}
-                            disabled={!isAvailableToday}
-                            className={`shrink-0 px-4 sm:px-5 py-2 sm:py-2.5 text-sm sm:text-base font-bold rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-red-500/20 transition-all ${isAvailableToday
-                                ? 'text-white bg-red-600 hover:bg-red-700 active:bg-red-800'
-                                : 'text-gray-400 bg-gray-100 cursor-not-allowed border border-gray-200'
-                                }`}
-                            aria-label={`Add ${product.name} to cart`}
-                        >
-                            {isAvailableToday ? 'Add' : 'Empty'}
-                        </button>
+                {/* Bottom action area — price stacked above full-width Add button */}
+                <div className="px-3 pb-3 sm:px-4 sm:pb-4 pt-0 flex flex-col gap-2">
+                    {/* Price row */}
+                    <div>
+                        {isPerPiece ? (
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-base sm:text-lg font-extrabold text-red-600 leading-none">
+                                    {formatCurrency(product.pricePerPiece ?? 0)}
+                                </span>
+                                <span className="text-[10px] sm:text-xs font-medium text-gray-400">/pc</span>
+                            </div>
+                        ) : (
+                            <div className="flex items-baseline gap-1">
+                                <span className="text-base sm:text-lg font-extrabold text-red-600 leading-none">
+                                    {formatCurrency(product.pricePerKg)}
+                                </span>
+                                <span className="text-[10px] sm:text-xs font-medium text-gray-400">/kg</span>
+                            </div>
+                        )}
                     </div>
+
+                    {/* Full-width Add button */}
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (isAvailableToday) setShowSelector(true);
+                        }}
+                        disabled={!isAvailableToday}
+                        className={`w-full py-2 sm:py-2.5 text-sm sm:text-base font-bold rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-red-500/20 transition-all ${isAvailableToday
+                            ? 'text-white bg-red-600 hover:bg-red-700 active:bg-red-800'
+                            : 'text-gray-400 bg-gray-100 cursor-not-allowed border border-gray-200'
+                            }`}
+                        aria-label={`Add ${product.name} to cart`}
+                    >
+                        {isAvailableToday ? 'Add to Cart' : 'Unavailable'}
+                    </button>
                 </div>
             </div>
 

@@ -68,9 +68,9 @@ export default function BestSellers() {
                         <p className="text-gray-500 text-sm sm:text-base">Customer favorites, cut fresh every day</p>
                     </div>
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                <div className="flex sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 overflow-hidden -mx-4 px-4 sm:mx-0 sm:px-0">
                     {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="bg-gray-50 animate-pulse rounded-2xl aspect-[3/4] border border-gray-100" />
+                        <div key={i} className="w-[80vw] max-w-[300px] sm:w-auto sm:max-w-none shrink-0 bg-gray-50 animate-pulse rounded-2xl aspect-[3/4] border border-gray-100" />
                     ))}
                 </div>
             </section>
@@ -97,10 +97,14 @@ export default function BestSellers() {
                 </Link>
             </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 overflow-x-auto pb-4 snap-x snap-mandatory -mx-4 px-4 sm:mx-0 sm:px-0 sm:pb-0 sm:overflow-visible [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                 {products.map((product) => (
-                    <ProductCard key={product.id} product={product} />
+                    <div key={product.id} className="w-[80vw] max-w-[300px] sm:w-auto sm:max-w-none shrink-0 snap-start">
+                        <ProductCard product={product} />
+                    </div>
                 ))}
+                {/* Spacer to guarantee right-side padding after the last item */}
+                <div className="w-[1px] shrink-0 sm:hidden"></div>
             </div>
 
             {/* Mobile View All button */}
