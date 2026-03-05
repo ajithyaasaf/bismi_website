@@ -15,12 +15,12 @@ export default function HomePage() {
       <Header />
       <main className="flex-1">
         {/* ─── Hero Section ──────────────────────── */}
-        <section className="relative w-full bg-black overflow-hidden">
+        <section className="relative w-full bg-black">
           {/* Desktop Banner Video (Cloudinary) */}
           <div className="hidden sm:block">
             <CloudinaryVideo
               publicId="bismi-broilers/hero_banner_video_v2"
-              className="w-full h-full object-cover block"
+              className="w-full h-auto block"
             />
           </div>
 
@@ -32,7 +32,7 @@ export default function HomePage() {
               muted
               playsInline
               preload="auto"
-              className="w-full h-full object-cover scale-[1.02] block"
+              className="w-full h-auto block"
             >
               <source src="/assets/images/banner_mobile.mp4" type="video/mp4" />
               Your browser does not support the video tag.
