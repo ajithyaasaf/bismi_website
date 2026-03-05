@@ -124,18 +124,18 @@ export default function ProductCard({ product }: ProductCardProps) {
 
                 {/* Fixed Bottom action area (isolated click target) */}
                 <div className="p-3 sm:p-4 pt-0">
-                    <div className="flex items-end justify-between gap-2">
-                        <div className="flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                        <div className="flex-1 min-w-0">
                             {isPerPiece ? (
-                                <div className="leading-none">
-                                    <span className="text-lg sm:text-xl font-extrabold text-red-600">
+                                <div className="leading-none whitespace-nowrap">
+                                    <span className="text-base sm:text-xl font-extrabold text-red-600">
                                         {formatCurrency(product.pricePerPiece ?? 0)}
                                     </span>
                                     <span className="text-[10px] sm:text-xs font-medium text-gray-400 ml-1">/pc</span>
                                 </div>
                             ) : (
-                                <div className="leading-none">
-                                    <span className="text-lg sm:text-xl font-extrabold text-red-600">
+                                <div className="leading-none whitespace-nowrap">
+                                    <span className="text-base sm:text-xl font-extrabold text-red-600">
                                         {formatCurrency(product.pricePerKg)}
                                     </span>
                                     <span className="text-[10px] sm:text-xs font-medium text-gray-400 ml-1">/kg</span>
@@ -148,7 +148,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                                 if (isAvailableToday) setShowSelector(true);
                             }}
                             disabled={!isAvailableToday}
-                            className={`shrink-0 px-4 sm:px-5 py-2 sm:py-2.5 text-sm sm:text-base font-bold rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-red-500/20 transition-all ${isAvailableToday
+                            className={`shrink-0 px-3 sm:px-5 py-1.5 sm:py-2.5 text-xs sm:text-base font-bold rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-red-500/20 transition-all ${isAvailableToday
                                 ? 'text-white bg-red-600 hover:bg-red-700 active:bg-red-800'
                                 : 'text-gray-400 bg-gray-100 cursor-not-allowed border border-gray-200'
                                 }`}
