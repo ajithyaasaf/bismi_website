@@ -10,6 +10,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { trackEvent } from '@/lib/analytics';
 
 function MenuContent() {
     const searchParams = useSearchParams();
@@ -53,6 +54,7 @@ function MenuContent() {
                     .sort((a, b) => a.name.localeCompare(b.name));
 
                 setProducts(items);
+                trackEvent('view_menu', 'engagement', activeCategory ?? 'all');
             } catch (err) {
                 console.error('Failed to fetch products:', err);
                 setError('Unable to load menu. Please check your connection and try again.');

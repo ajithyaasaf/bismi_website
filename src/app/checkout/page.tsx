@@ -16,6 +16,7 @@ import {
 } from '@/lib/slotControl';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { trackEvent } from '@/lib/analytics';
 
 export default function CheckoutPage() {
     const router = useRouter();
@@ -69,6 +70,11 @@ export default function CheckoutPage() {
 
         loadSlots();
         return () => { cancelled = true; };
+    }, []);
+
+    // ─── Track checkout start ────────────────────────────
+    useEffect(() => {
+        trackEvent('checkout_start', 'checkout');
     }, []);
 
     // Redirect if cart is empty — guarded so clearCart() during submit does NOT trigger this

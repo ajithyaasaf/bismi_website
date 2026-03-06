@@ -7,6 +7,7 @@ import Footer from '@/components/Footer';
 import { useCart } from '@/context/CartContext';
 import { formatCurrency, buildWhatsAppCartUrl } from '@/lib/utils';
 import { SHOP_CONFIG } from '@/lib/config';
+import { trackEvent } from '@/lib/analytics';
 
 export default function CartPage() {
     const { items, subtotal, updateQuantity, removeItem } = useCart();
@@ -177,6 +178,7 @@ export default function CartPage() {
                         href={buildWhatsAppCartUrl(items, total, 'delivery')}
                         target="_blank"
                         rel="noopener noreferrer"
+                        onClick={() => trackEvent('whatsapp_order_click', 'fallback')}
                         className="flex items-center justify-center gap-2 w-full py-3 text-sm font-semibold text-green-700 bg-green-50 border border-green-200 rounded-xl hover:bg-green-100 active:scale-[0.98] transition-all"
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { CartProvider } from '@/context/CartContext';
 import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar';
+import GoogleAnalytics from '@/components/GoogleAnalytics';
 import { SHOP_CONFIG } from '@/lib/config';
 import './globals.css';
 
@@ -87,6 +88,7 @@ export default function RootLayout({
       </head>
       <body className="font-sans antialiased min-h-screen flex flex-col bg-background text-foreground">
         <CartProvider>
+          <GoogleAnalytics />
           <ServiceWorkerRegistrar />
           {children}
         </CartProvider>

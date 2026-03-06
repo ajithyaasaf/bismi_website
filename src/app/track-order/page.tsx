@@ -9,6 +9,7 @@ import { formatCurrency, formatDate, validateMobile } from '@/lib/utils';
 import { STATUS_CONFIG, SHOP_CONFIG } from '@/lib/config';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import { trackEvent } from '@/lib/analytics';
 
 // The logical flow of order statuses
 const STATUS_TIMELINE = [
@@ -66,6 +67,7 @@ function TrackOrderContent() {
                 setError('No recent orders found for this mobile number.');
             } else {
                 setOrder({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Order);
+                trackEvent('track_order', 'engagement');
             }
         } catch (err) {
             console.error('Failed to track order:', err);

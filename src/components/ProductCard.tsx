@@ -8,6 +8,7 @@ import { useCart } from '@/context/CartContext';
 import QuantitySelector from './QuantitySelector';
 import PieceSelectorModal from './PieceSelectorModal';
 import ProductSheet from './ProductSheet';
+import { trackEvent } from '@/lib/analytics';
 
 interface ProductCardProps {
     product: MeatType;
@@ -40,6 +41,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         setShowSelector(false);
         setShowSheet(false);
         flashAdded();
+        trackEvent('add_to_cart', 'cart', product.name);
     };
 
     // Handler for piece-based products
@@ -56,6 +58,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         setShowSelector(false);
         setShowSheet(false);
         flashAdded();
+        trackEvent('add_to_cart', 'cart', product.name);
     };
 
     return (
@@ -120,42 +123,60 @@ export default function ProductCard({ product }: ProductCardProps) {
                     </div>
                 </div>
 
-                {/* Bottom action area — price stacked above full-width Add button */}
-                <div className="px-3 pb-3 sm:px-4 sm:pb-4 pt-0 flex flex-col gap-2">
-                    {/* Price row */}
-                    <div>
-                        {isPerPiece ? (
-                            <div className="flex items-baseline gap-1">
-                                <span className="text-base sm:text-lg font-extrabold text-red-600 leading-none">
-                                    {formatCurrency(product.pricePerPiece ?? 0)}
-                                </span>
-                                <span className="text-[10px] sm:text-xs font-medium text-gray-400">/pc</span>
-                            </div>
-                        ) : (
-                            <div className="flex items-baseline gap-1">
-                                <span className="text-base sm:text-lg font-extrabold text-red-600 leading-none">
-                                    {formatCurrency(product.pricePerKg)}
-                                </span>
-                                <span className="text-[10px] sm:text-xs font-medium text-gray-400">/kg</span>
-                            </div>
-                        )}
+                {/* Bottom action area
+                    Mobile  (<sm): stacked — price on top, full-width button below
+                    Desktop (sm+): side-by-side — price left, compact Add button right
+                */}
+                <div className="px-3 pb-3 sm:px-4 sm:pb-4 pt-0">
+
+                    {/* ── Mobile layout (default, overridden at sm) ── */}
+                    <div className="flex flex-col gap-2 sm:hidden">
+                        {/* Price */}
+                        <div className="flex items-baseline gap-1">
+                            <span className="text-base font-extrabold text-red-600 leading-none">
+                                {formatCurrency(isPerPiece ? (product.pricePerPiece ?? 0) : product.pricePerKg)}
+                            </span>
+                            <span className="text-[10px] font-medium text-gray-400">
+                                {isPerPiece ? '/pc' : '/kg'}
+                            </span>
+                        </div>
+                        {/* Full-width CTA */}
+                        <button
+                            onClick={(e) => { e.stopPropagation(); if (isAvailableToday) setShowSelector(true); }}
+                            disabled={!isAvailableToday}
+                            className={`w-full py-2 text-sm font-bold rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-red-500/20 transition-all ${isAvailableToday
+                                ? 'text-white bg-red-600 hover:bg-red-700 active:bg-red-800'
+                                : 'text-gray-400 bg-gray-100 cursor-not-allowed border border-gray-200'
+                                }`}
+                            aria-label={`Add ${product.name} to cart`}
+                        >
+                            {isAvailableToday ? 'Add to Cart' : 'Unavailable'}
+                        </button>
                     </div>
 
-                    {/* Full-width Add button */}
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            if (isAvailableToday) setShowSelector(true);
-                        }}
-                        disabled={!isAvailableToday}
-                        className={`w-full py-2 sm:py-2.5 text-sm sm:text-base font-bold rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-red-500/20 transition-all ${isAvailableToday
-                            ? 'text-white bg-red-600 hover:bg-red-700 active:bg-red-800'
-                            : 'text-gray-400 bg-gray-100 cursor-not-allowed border border-gray-200'
-                            }`}
-                        aria-label={`Add ${product.name} to cart`}
-                    >
-                        {isAvailableToday ? 'Add to Cart' : 'Unavailable'}
-                    </button>
+                    {/* ── Tablet / Desktop layout (sm and above) ── */}
+                    <div className="hidden sm:flex items-end justify-between gap-2">
+                        <div className="flex items-baseline gap-1">
+                            <span className="text-xl font-extrabold text-red-600 leading-none">
+                                {formatCurrency(isPerPiece ? (product.pricePerPiece ?? 0) : product.pricePerKg)}
+                            </span>
+                            <span className="text-xs font-medium text-gray-400">
+                                {isPerPiece ? '/pc' : '/kg'}
+                            </span>
+                        </div>
+                        <button
+                            onClick={(e) => { e.stopPropagation(); if (isAvailableToday) setShowSelector(true); }}
+                            disabled={!isAvailableToday}
+                            className={`shrink-0 px-5 py-2.5 text-base font-bold rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-red-500/20 transition-all ${isAvailableToday
+                                ? 'text-white bg-red-600 hover:bg-red-700 active:bg-red-800'
+                                : 'text-gray-400 bg-gray-100 cursor-not-allowed border border-gray-200'
+                                }`}
+                            aria-label={`Add ${product.name} to cart`}
+                        >
+                            {isAvailableToday ? 'Add' : 'Unavailable'}
+                        </button>
+                    </div>
+
                 </div>
             </div>
 

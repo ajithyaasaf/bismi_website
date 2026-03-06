@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { doc, getDoc } from 'firebase/firestore';
@@ -11,6 +11,7 @@ import { SHOP_CONFIG } from '@/lib/config';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { trackEvent } from '@/lib/analytics';
 
 export default function OrderConfirmationPage() {
     const params = useParams();
@@ -18,6 +19,7 @@ export default function OrderConfirmationPage() {
 
     const [order, setOrder] = useState<Order | null>(null);
     const [loading, setLoading] = useState(true);
+    const tracked = useRef(false);
 
     useEffect(() => {
         async function fetchOrder() {
@@ -36,6 +38,14 @@ export default function OrderConfirmationPage() {
 
         if (orderId) fetchOrder();
     }, [orderId]);
+
+    // Track conversion once order data is available
+    useEffect(() => {
+        if (order && !tracked.current) {
+            tracked.current = true;
+            trackEvent('order_placed', 'conversion', 'order', order.totalAmount);
+        }
+    }, [order]);
 
     if (loading) {
         return (
