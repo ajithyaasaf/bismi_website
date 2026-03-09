@@ -6,6 +6,7 @@ interface PieceSelectorModalProps {
     productName: string;
     pricePerPiece: number;
     onSelect: (pieces: number, cuttingPreference: string) => void;
+    onBuyNow?: (pieces: number, cuttingPreference: string) => void;
     onCancel: () => void;
 }
 
@@ -16,6 +17,7 @@ export default function PieceSelectorModal({
     productName,
     pricePerPiece,
     onSelect,
+    onBuyNow,
     onCancel,
 }: PieceSelectorModalProps) {
     const [selectedPieces, setSelectedPieces] = useState<number>(2); // default 2
@@ -69,8 +71,8 @@ export default function PieceSelectorModal({
                                         setError('');
                                     }}
                                     className={`py-3 text-sm font-semibold rounded-xl border-2 transition-all active:scale-95 ${!showCustom && selectedPieces === p
-                                            ? 'border-red-500 bg-red-50 text-red-600'
-                                            : 'border-gray-200 text-gray-700 hover:border-red-300 hover:text-red-600 hover:bg-red-50'
+                                        ? 'border-red-500 bg-red-50 text-red-600'
+                                        : 'border-gray-200 text-gray-700 hover:border-red-300 hover:text-red-600 hover:bg-red-50'
                                         }`}
                                 >
                                     {p} pcs
@@ -112,8 +114,8 @@ export default function PieceSelectorModal({
                                     key={opt}
                                     onClick={() => setCutting(opt)}
                                     className={`py-2.5 px-3 text-sm font-medium rounded-xl border-2 transition-all active:scale-95 ${cutting === opt
-                                            ? 'border-red-500 bg-red-50 text-red-600'
-                                            : 'border-gray-200 text-gray-600 hover:border-red-300 hover:bg-red-50'
+                                        ? 'border-red-500 bg-red-50 text-red-600'
+                                        : 'border-gray-200 text-gray-600 hover:border-red-300 hover:bg-red-50'
                                         }`}
                                 >
                                     {opt}
@@ -136,19 +138,52 @@ export default function PieceSelectorModal({
                 </div>
 
                 {/* Actions */}
-                <div className="px-5 pb-5 space-y-2">
-                    <button
-                        onClick={handleAdd}
-                        className="w-full py-3 text-sm font-bold text-white bg-red-600 rounded-xl hover:bg-red-700 active:scale-[0.98] transition-all shadow-md shadow-red-100"
-                    >
-                        Add to Cart
-                    </button>
-                    <button
-                        onClick={onCancel}
-                        className="w-full py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
-                    >
-                        Cancel
-                    </button>
+                <div className="px-5 pb-5 mt-2">
+                    {onBuyNow ? (
+                        <div className="flex flex-col gap-2">
+                            <button
+                                onClick={handleAdd}
+                                disabled={!effectivePieces || effectivePieces < 1}
+                                className="w-full py-2.5 text-sm font-bold text-white bg-gray-900 rounded-xl hover:bg-black active:scale-[0.98] transition-all disabled:opacity-50"
+                            >
+                                Add to Cart
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (!effectivePieces || effectivePieces < 1) {
+                                        setError('Minimum 1 piece');
+                                        return;
+                                    }
+                                    onBuyNow(effectivePieces, cutting);
+                                }}
+                                disabled={!effectivePieces || effectivePieces < 1}
+                                className="w-full py-2.5 text-sm font-bold text-white bg-red-600 rounded-xl hover:bg-red-700 active:scale-[0.98] transition-all flex justify-center items-center gap-2 shadow-lg shadow-red-500/30 disabled:opacity-50 disabled:shadow-none"
+                            >
+                                Buy Now
+                            </button>
+                            <button
+                                onClick={onCancel}
+                                className="w-full py-2.5 mt-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="flex gap-2">
+                            <button
+                                onClick={onCancel}
+                                className="w-1/3 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleAdd}
+                                className="w-2/3 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-xl hover:bg-red-700 active:scale-95 transition-all"
+                            >
+                                Add to Cart
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

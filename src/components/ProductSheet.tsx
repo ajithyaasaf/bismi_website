@@ -39,11 +39,13 @@ interface ProductSheetProps {
     isOpen: boolean;
     onClose: () => void;
     onAdd: () => void;
+    onBuyNow?: () => void;
 }
 
-export default function ProductSheet({ product, isOpen, onClose, onAdd }: ProductSheetProps) {
+export default function ProductSheet({ product, isOpen, onClose, onAdd, onBuyNow }: ProductSheetProps) {
     const [isAnimating, setIsAnimating] = useState(false);
     const [shouldRender, setShouldRender] = useState(false);
+    const [isImageLoading, setIsImageLoading] = useState(true);
 
     const isPerPiece = product.unit === 'piece';
     const isAvailableToday = product.isAvailableToday !== false;
@@ -106,14 +108,15 @@ export default function ProductSheet({ product, isOpen, onClose, onAdd }: Produc
                 <div className="flex-1 overflow-y-auto overscroll-contain">
 
                     {/* Product Image with fresh tag overlay */}
-                    <div className="relative w-full aspect-[16/9] bg-gray-100 overflow-hidden">
+                    <div className={`relative w-full aspect-[16/9] bg-gray-100 overflow-hidden ${isImageLoading ? 'animate-pulse' : ''}`}>
                         <Image
                             src={product.imageURL}
                             alt={product.name}
                             fill
                             sizes="(max-width: 640px) 100vw, 448px"
-                            className="object-cover"
+                            className={`object-cover transition-opacity duration-500 ${isImageLoading ? 'opacity-0' : 'opacity-100'}`}
                             priority
+                            onLoad={() => setIsImageLoading(false)}
                         />
                         {/* Gradient overlay for text readability */}
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
@@ -194,16 +197,31 @@ export default function ProductSheet({ product, isOpen, onClose, onAdd }: Produc
 
                 {/* Fixed Bottom Action */}
                 <div className="shrink-0 px-4 py-4 border-t border-gray-100 bg-white shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)]">
-                    <button
-                        onClick={onAdd}
-                        disabled={!isAvailableToday}
-                        className={`w-full py-3.5 text-base font-extrabold rounded-2xl shadow-md transition-all focus:outline-none focus:ring-4 focus:ring-red-500/20 ${isAvailableToday
-                            ? 'text-white bg-red-600 hover:bg-red-700 active:bg-red-800'
-                            : 'text-gray-400 bg-gray-100 cursor-not-allowed border border-gray-200'
-                            }`}
-                    >
-                        {isAvailableToday ? 'Add to Cart 🛒' : 'Currently Unavailable'}
-                    </button>
+                    {isAvailableToday ? (
+                        <div className={`${onBuyNow ? 'grid grid-cols-2 gap-2' : ''}`}>
+                            <button
+                                onClick={onAdd}
+                                className="w-full py-3.5 text-base font-extrabold rounded-2xl shadow-sm transition-all focus:outline-none focus:ring-4 focus:ring-red-500/20 text-red-600 bg-white border-2 border-red-600 hover:bg-red-50 active:bg-red-100"
+                            >
+                                Add to Cart 🛒
+                            </button>
+                            {onBuyNow && (
+                                <button
+                                    onClick={onBuyNow}
+                                    className="w-full py-3.5 text-base font-extrabold rounded-2xl shadow-lg shadow-red-500/30 transition-all focus:outline-none focus:ring-4 focus:ring-red-500/20 text-white bg-red-600 hover:bg-red-700 active:bg-red-800"
+                                >
+                                    Buy Now
+                                </button>
+                            )}
+                        </div>
+                    ) : (
+                        <button
+                            disabled
+                            className="w-full py-3.5 text-base font-extrabold rounded-2xl text-gray-400 bg-gray-100 cursor-not-allowed border border-gray-200"
+                        >
+                            Currently Unavailable
+                        </button>
+                    )}
                     <p className="text-center text-[11px] text-gray-400 mt-2">
                         {isAvailableToday ? 'Delivered fresh to your door · Free delivery' : 'Check back later for fresh stock'}
                     </p>

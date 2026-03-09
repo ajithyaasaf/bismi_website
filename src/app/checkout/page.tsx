@@ -2,9 +2,12 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import Link from 'next/link';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useCart } from '@/context/CartContext';
+import ImageWithSkeleton from '@/components/ImageWithSkeleton';
 import { DeliveryType, OrderStatus } from '@/types';
 import { formatCurrency, validateMobile, generateIdempotencyToken, computeDeliveryCharge } from '@/lib/utils';
 import { SHOP_CONFIG } from '@/lib/config';
@@ -355,10 +358,12 @@ export default function CheckoutPage() {
                     </div>
 
                     {/* Order Summary */}
-                    <div className="bg-white rounded-xl border border-gray-100 p-5 mb-6">
-                        <h2 className="text-sm font-bold text-gray-900 mb-4">Order Summary</h2>
+                    <div className="bg-white rounded-xl border border-gray-100 p-5 mb-6 shadow-sm">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2 className="text-sm font-bold text-gray-900">Order Summary</h2>
+                        </div>
 
-                        <div className="space-y-2 text-sm mb-4">
+                        <div className="space-y-4 text-sm mb-5">
                             {items.map((item) => {
                                 const isPerPiece = item.unit === 'piece';
                                 const qtyLabel = isPerPiece
@@ -369,26 +374,48 @@ export default function CheckoutPage() {
                                     : (item.kg ?? 0) * (item.pricePerKg ?? 0);
 
                                 return (
-                                    <div key={item.meatTypeId} className="flex justify-between text-gray-600">
-                                        <span className="truncate mr-2">
-                                            {item.meatName} × {qtyLabel}
-                                        </span>
-                                        <span className="shrink-0 font-medium">
+                                    <div key={item.meatTypeId} className="flex items-center gap-3">
+                                        {/* Thumbnail */}
+                                        {item.imageURL ? (
+                                            <ImageWithSkeleton
+                                                src={item.imageURL}
+                                                alt={item.meatName}
+                                                fill
+                                                sizes="48px"
+                                                containerClassName="w-12 h-12 shrink-0 rounded-lg border border-gray-200"
+                                                imageClassName="object-cover"
+                                            />
+                                        ) : (
+                                            <div className="relative w-12 h-12 shrink-0 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
+                                                <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">
+                                                    No Img
+                                                </div>
+                                            </div>
+                                        )}
+                                        {/* Details */}
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-gray-900 font-medium truncate">{item.meatName}</p>
+                                            <p className="text-xs text-gray-500 mt-0.5">
+                                                Qty: <span className="font-semibold">{qtyLabel}</span>
+                                            </p>
+                                        </div>
+                                        {/* Price */}
+                                        <div className="shrink-0 font-bold text-gray-900">
                                             {formatCurrency(lineTotal)}
-                                        </span>
+                                        </div>
                                     </div>
                                 );
                             })}
                         </div>
 
-                        <div className="border-t border-gray-100 pt-3 space-y-2 text-sm">
+                        <div className="border-t border-gray-100 pt-4 space-y-3 text-sm">
                             <div className="flex justify-between text-gray-600">
                                 <span>Subtotal</span>
-                                <span className="font-medium">{formatCurrency(subtotal)}</span>
+                                <span className="font-medium text-gray-900">{formatCurrency(subtotal)}</span>
                             </div>
                             <div className="flex justify-between text-gray-600">
                                 <span>Delivery</span>
-                                <span className="font-medium">
+                                <span className="font-medium text-gray-900">
                                     {deliveryType === DeliveryType.PICKUP
                                         ? '—'
                                         : deliveryCharge === 0
@@ -396,9 +423,9 @@ export default function CheckoutPage() {
                                             : formatCurrency(deliveryCharge)}
                                 </span>
                             </div>
-                            <div className="border-t border-gray-100 pt-2 flex justify-between">
-                                <span className="font-bold text-gray-900">Total</span>
-                                <span className="font-bold text-lg text-gray-900">{formatCurrency(total)}</span>
+                            <div className="border-t border-gray-200 pt-3 flex justify-between items-center">
+                                <span className="font-black text-gray-900 uppercase tracking-wider text-xs">Total</span>
+                                <span className="font-black text-xl text-red-600">{formatCurrency(total)}</span>
                             </div>
                         </div>
                     </div>

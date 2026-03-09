@@ -5,19 +5,24 @@ import { validateQuantity } from '@/lib/utils';
 
 interface QuantitySelectorProps {
     onSelect: (kg: number) => void;
+    onBuyNow?: (kg: number) => void;
     onCancel: () => void;
     productName: string;
 }
 
 const PRESET_QUANTITIES = [0.5, 1, 1.5, 2];
 
-export default function QuantitySelector({ onSelect, onCancel, productName }: QuantitySelectorProps) {
+export default function QuantitySelector({ onSelect, onBuyNow, onCancel, productName }: QuantitySelectorProps) {
     const [customQty, setCustomQty] = useState('');
     const [showCustom, setShowCustom] = useState(false);
     const [error, setError] = useState('');
 
     const handlePreset = (kg: number) => {
-        onSelect(kg);
+        setCustomQty(kg.toString());
+        // Auto-select for speed if no Buy Now feature, otherwise let user examine
+        if (!onBuyNow) {
+            onSelect(kg);
+        }
     };
 
     const handleCustomSubmit = () => {
@@ -53,54 +58,79 @@ export default function QuantitySelector({ onSelect, onCancel, productName }: Qu
                         ))}
                     </div>
 
-                    {/* Custom Toggle */}
-                    {!showCustom ? (
-                        <button
-                            onClick={() => setShowCustom(true)}
-                            className="w-full py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl transition-colors"
-                        >
-                            Custom quantity →
-                        </button>
-                    ) : (
-                        <div className="space-y-2">
-                            <div className="flex gap-2">
-                                <div className="flex-1 relative">
-                                    <input
-                                        type="number"
-                                        step="0.25"
-                                        min="0.5"
-                                        max="50"
-                                        value={customQty}
-                                        onChange={(e) => {
-                                            setCustomQty(e.target.value);
-                                            setError('');
-                                        }}
-                                        placeholder="e.g. 2.5"
-                                        className="w-full px-4 py-2.5 text-sm border-2 border-gray-200 rounded-xl focus:border-red-500 focus:outline-none transition-colors"
-                                        autoFocus
-                                    />
-                                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">kg</span>
-                                </div>
-                                <button
-                                    onClick={handleCustomSubmit}
-                                    className="px-5 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-xl hover:bg-red-700 active:scale-95 transition-all"
-                                >
-                                    Add
-                                </button>
+                    {/* Custom Toggle (or direct input if preset selected) */}
+                    <div className="space-y-2">
+                        <div className="flex gap-2">
+                            <div className="flex-1 relative">
+                                <input
+                                    type="number"
+                                    step="0.25"
+                                    min="0.5"
+                                    max="50"
+                                    value={customQty}
+                                    onChange={(e) => {
+                                        setCustomQty(e.target.value);
+                                        setError('');
+                                    }}
+                                    placeholder="Qty in kg (e.g. 1.5)"
+                                    className="w-full px-4 py-2.5 text-sm border-2 border-gray-200 rounded-xl focus:border-red-500 focus:outline-none transition-colors"
+                                    autoFocus
+                                />
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">kg</span>
                             </div>
-                            {error && <p className="text-xs text-red-500 px-1">{error}</p>}
                         </div>
-                    )}
+                        {error && <p className="text-xs text-red-500 px-1">{error}</p>}
+                    </div>
                 </div>
 
-                {/* Cancel */}
+                {/* Actions */}
                 <div className="px-5 pb-5">
-                    <button
-                        onClick={onCancel}
-                        className="w-full py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
-                    >
-                        Cancel
-                    </button>
+                    {onBuyNow ? (
+                        <div className="flex flex-col gap-2">
+                            <button
+                                onClick={handleCustomSubmit}
+                                disabled={!customQty}
+                                className="w-full py-2.5 text-sm font-bold text-white bg-gray-900 rounded-xl hover:bg-black active:scale-[0.98] transition-all disabled:opacity-50"
+                            >
+                                Add to Cart
+                            </button>
+                            <button
+                                onClick={() => {
+                                    const qty = parseFloat(customQty);
+                                    if (isNaN(qty) || !validateQuantity(qty)) {
+                                        setError('Min 0.5 kg, max 50 kg');
+                                        return;
+                                    }
+                                    onBuyNow(qty);
+                                }}
+                                disabled={!customQty}
+                                className="w-full py-2.5 text-sm font-bold text-white bg-red-600 rounded-xl hover:bg-red-700 active:scale-[0.98] transition-all flex justify-center items-center gap-2 shadow-lg shadow-red-500/30 disabled:opacity-50 disabled:shadow-none"
+                            >
+                                Buy Now
+                            </button>
+                            <button
+                                onClick={onCancel}
+                                className="w-full py-2.5 mt-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="flex gap-2">
+                            <button
+                                onClick={onCancel}
+                                className="w-1/3 py-2.5 text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleCustomSubmit}
+                                className="w-2/3 py-2.5 text-sm font-semibold text-white bg-red-600 rounded-xl hover:bg-red-700 active:scale-95 transition-all"
+                            >
+                                Add to Cart
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

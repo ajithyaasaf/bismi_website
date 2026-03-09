@@ -19,6 +19,7 @@ interface CartContextValue {
     items: CartItem[];
     itemCount: number;
     subtotal: number;
+    toastItem: { name: string } | null;
     addItem: (item: CartItem) => void;
     updateQuantity: (meatTypeId: string, qty: number) => void;
     removeItem: (meatTypeId: string) => void;
@@ -106,6 +107,7 @@ function loadCart(): CartItem[] {
 // ─── Provider ────────────────────────────────────────────
 export function CartProvider({ children }: { children: React.ReactNode }) {
     const [state, dispatch] = useReducer(cartReducer, { items: [] });
+    const [toastItem, setToastItem] = React.useState<{ name: string } | null>(null);
 
     useEffect(() => {
         const saved = loadCart();
@@ -114,9 +116,15 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => { saveCart(state.items); }, [state.items]);
 
+    const showToast = useCallback((name: string) => {
+        setToastItem({ name });
+        setTimeout(() => setToastItem(null), 3500); // Auto-hide after 3.5s
+    }, []);
+
     const addItem = useCallback((item: CartItem) => {
         dispatch({ type: 'ADD_ITEM', payload: item });
-    }, []);
+        showToast(item.meatName);
+    }, [showToast]);
 
     const updateQuantity = useCallback((meatTypeId: string, qty: number) => {
         const item = state.items.find(i => i.meatTypeId === meatTypeId);
@@ -142,7 +150,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <CartContext.Provider
-            value={{ items: state.items, itemCount, subtotal, addItem, updateQuantity, removeItem, clearCart }}
+            value={{ items: state.items, itemCount, subtotal, toastItem, addItem, updateQuantity, removeItem, clearCart }}
         >
             {children}
         </CartContext.Provider>

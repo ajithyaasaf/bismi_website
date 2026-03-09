@@ -9,6 +9,7 @@ import { CATEGORIES, CHICKEN_GROUPS } from '@/lib/config';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
+import { ProductGridSkeleton } from '@/components/ProductCardSkeleton';
 import LoadingSpinner from '@/components/LoadingSpinner';
 import { trackEvent } from '@/lib/analytics';
 
@@ -212,7 +213,9 @@ function MenuContent() {
 
             {/* Products Content */}
             {loading ? (
-                <LoadingSpinner text="Loading menu..." />
+                <div className="space-y-6">
+                    <ProductGridSkeleton count={8} />
+                </div>
             ) : error ? (
                 <div className="text-center py-16">
                     <div className="text-4xl mb-3">😕</div>
@@ -236,7 +239,7 @@ export default function MenuPage() {
         <>
             <Header />
             <main className="flex-1 max-w-7xl mx-auto px-4 py-6">
-                <Suspense fallback={<LoadingSpinner text="Loading menu..." />}>
+                <Suspense fallback={<ProductGridSkeleton count={8} className="mt-8" />}>
                     <MenuContent />
                 </Suspense>
             </main>

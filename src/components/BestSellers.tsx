@@ -5,6 +5,7 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '@/lib/firebase';
 import { MeatType } from '@/types';
 import ProductCard from './ProductCard';
+import { ProductCardSkeleton } from './ProductCardSkeleton';
 import Link from 'next/link';
 
 // ── Pinned best-seller names — edit this list to change what shows ────────────
@@ -70,7 +71,9 @@ export default function BestSellers() {
                 </div>
                 <div className="flex sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 overflow-hidden -mx-4 px-4 sm:mx-0 sm:px-0">
                     {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="w-[80vw] max-w-[300px] sm:w-auto sm:max-w-none shrink-0 bg-gray-50 animate-pulse rounded-2xl aspect-[3/4] border border-gray-100" />
+                        <div key={i} className="w-[80vw] max-w-[300px] sm:w-auto sm:max-w-none shrink-0">
+                            <ProductCardSkeleton />
+                        </div>
                     ))}
                 </div>
             </section>

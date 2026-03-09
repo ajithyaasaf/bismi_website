@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { MeatType } from '@/types';
 import { formatCurrency } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
@@ -15,9 +16,12 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+    const router = useRouter();
     const [showSelector, setShowSelector] = useState(false);
+    const [buyNowMode, setBuyNowMode] = useState(false);
     const [showSheet, setShowSheet] = useState(false);
     const [addedAnimation, setAddedAnimation] = useState(false);
+    const [isImageLoading, setIsImageLoading] = useState(true);
     const { addItem } = useCart();
 
     const isPerPiece = product.unit === 'piece';
@@ -39,6 +43,7 @@ export default function ProductCard({ product }: ProductCardProps) {
             imageURL: product.imageURL,
         });
         setShowSelector(false);
+        setBuyNowMode(false);
         setShowSheet(false);
         flashAdded();
         trackEvent('add_to_cart', 'cart', product.name);
@@ -56,9 +61,38 @@ export default function ProductCard({ product }: ProductCardProps) {
             imageURL: product.imageURL,
         });
         setShowSelector(false);
+        setBuyNowMode(false);
         setShowSheet(false);
         flashAdded();
         trackEvent('add_to_cart', 'cart', product.name);
+    };
+
+    // Buy Now handlers
+    const handleBuyNowKg = (kg: number) => {
+        addItem({
+            meatTypeId: product.id,
+            meatName: product.name,
+            unit: 'kg',
+            kg,
+            pricePerKg: product.pricePerKg,
+            imageURL: product.imageURL,
+        });
+        trackEvent('buy_now', 'cart', product.name);
+        router.push('/checkout');
+    };
+
+    const handleBuyNowPieces = (pieces: number, cuttingPreference: string) => {
+        addItem({
+            meatTypeId: product.id,
+            meatName: product.name,
+            unit: 'piece',
+            pieces,
+            pricePerPiece: product.pricePerPiece,
+            cuttingPreference,
+            imageURL: product.imageURL,
+        });
+        trackEvent('buy_now', 'cart', product.name);
+        router.push('/checkout');
     };
 
     return (
@@ -76,13 +110,14 @@ export default function ProductCard({ product }: ProductCardProps) {
                     aria-label={`View details for ${product.name}`}
                 >
                     {/* Image */}
-                    <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden shrink-0">
+                    <div className={`relative aspect-[4/3] bg-gray-100 overflow-hidden shrink-0 ${isImageLoading ? 'animate-pulse' : ''}`}>
                         <Image
                             src={product.imageURL}
                             alt={product.name}
                             fill
                             sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw"
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            className={`object-cover group-hover:scale-105 transition-all duration-500 ${isImageLoading ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
+                            onLoad={() => setIsImageLoading(false)}
                         />
                         {addedAnimation && (
                             <div className="absolute inset-0 bg-green-500/80 flex items-center justify-center animate-fade-in z-10">
@@ -187,7 +222,12 @@ export default function ProductCard({ product }: ProductCardProps) {
                 onClose={() => setShowSheet(false)}
                 onAdd={() => {
                     setShowSheet(false);
-                    // Add slight delay to allow sheet to close before opening selector
+                    setBuyNowMode(false);
+                    setTimeout(() => setShowSelector(true), 300);
+                }}
+                onBuyNow={() => {
+                    setShowSheet(false);
+                    setBuyNowMode(true);
                     setTimeout(() => setShowSelector(true), 300);
                 }}
             />
@@ -198,13 +238,15 @@ export default function ProductCard({ product }: ProductCardProps) {
                         productName={product.name}
                         pricePerPiece={product.pricePerPiece ?? 0}
                         onSelect={handleAddPieces}
-                        onCancel={() => setShowSelector(false)}
+                        onBuyNow={buyNowMode ? handleBuyNowPieces : undefined}
+                        onCancel={() => { setShowSelector(false); setBuyNowMode(false); }}
                     />
                 ) : (
                     <QuantitySelector
                         productName={product.name}
                         onSelect={handleAddKg}
-                        onCancel={() => setShowSelector(false)}
+                        onBuyNow={buyNowMode ? handleBuyNowKg : undefined}
+                        onCancel={() => { setShowSelector(false); setBuyNowMode(false); }}
                     />
                 )
             )}

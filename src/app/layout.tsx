@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google';
 import { CartProvider } from '@/context/CartContext';
 import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
+import CartToast from '@/components/CartToast';
+import FloatingCartBar from '@/components/FloatingCartBar';
 import { SHOP_CONFIG } from '@/lib/config';
 import './globals.css';
 
@@ -90,6 +92,8 @@ export default function RootLayout({
         <CartProvider>
           <GoogleAnalytics />
           <ServiceWorkerRegistrar />
+          <CartToast />
+          <FloatingCartBar />
           {children}
         </CartProvider>
       </body>
