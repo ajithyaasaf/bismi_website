@@ -145,6 +145,12 @@ export default function OrderDetailPage() {
                             <p className="font-medium text-gray-900">{order.address}</p>
                         </div>
                     )}
+                    {order.deliveryZoneLabel && (
+                        <div>
+                            <span className="text-gray-400">Delivery Zone</span>
+                            <p className="font-medium text-gray-900">{order.deliveryZoneLabel}</p>
+                        </div>
+                    )}
                     {order.deliveryTimeSlot && (
                         <div>
                             <span className="text-gray-400">Delivery Slot</span>

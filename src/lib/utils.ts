@@ -123,7 +123,7 @@ export function buildWhatsAppOrderUrl(order: Order): string {
 
     const deliveryLabel = order.deliveryType === 'pickup'
         ? 'Pickup from shop'
-        : `Home delivery${order.deliveryTimeSlot ? ` (${order.deliveryTimeSlot})` : ''}`;
+        : `Home delivery${order.deliveryZoneLabel ? ` — ${order.deliveryZoneLabel}` : ''}${order.deliveryTimeSlot ? ` (${order.deliveryTimeSlot})` : ''}`;
 
     const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
     const trackingUrl = `${baseUrl}/track-order?mobile=${order.mobile}`;

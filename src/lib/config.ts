@@ -24,6 +24,39 @@ export const SHOP_CONFIG = {
 } as const;
 
 /**
+ * Delivery zones within ~5 km of the shop.
+ * Customers MUST select one of these zones to place a delivery order.
+ * The admin uses the zone label + the customer's detailed address to locate the house.
+ *
+ * To add/remove zones, simply edit this array.
+ * `key`   — Unique identifier stored in the order document
+ * `label` — Human-readable name shown in the dropdown
+ */
+export const DELIVERY_ZONES = [
+    { key: 'bus-stand', label: 'Near Bus Stand (பேருந்து நிலையம்)' },
+    { key: 'sbi-atm', label: 'Near SBI ATM / Hyrnisha Hospital (SBI ATM அருகில்)' },
+    { key: 'kamuthi-road', label: 'Kamuthi Road (காமுதி சாலை)' },
+    { key: 'paramakudi-road', label: 'Paramakudi Road (பரமக்குடி சாலை)' },
+    { key: 'main-bazaar', label: 'Main Bazaar / Market Street (மெயின் பஜார்)' },
+    { key: 'mosque-street', label: 'Mosque Street / Pallivasal Street (பள்ளிவாசல் தெரு)' },
+    { key: 'north-street', label: 'North Street (வடக்கு தெரு)' },
+    { key: 'south-street', label: 'South Street (தெற்கு தெரு)' },
+    { key: 'east-street', label: 'East Street (கிழக்கு தெரு)' },
+    { key: 'west-street', label: 'West Street (மேற்கு தெரு)' },
+    { key: 'keelacheval', label: 'Keelacheval (கீழச்செவல்)' },
+    { key: 'melacheval', label: 'Melacheval (மேலச்செவல்)' },
+    { key: 'keelaselvanur', label: 'Keelaselvanur (கீழச்செல்வனூர்)' },
+    { key: 'melaselvanur', label: 'Melaselvanur (மேலச்செல்வனூர்)' },
+    { key: 'other', label: 'Other (மற்றவை)' },
+] as const;
+
+/**
+ * Maximum delivery radius in kilometers.
+ * Used only for display purposes in the "Other" zone warning.
+ */
+export const DELIVERY_RADIUS_KM = 5;
+
+/**
  * Sub-category grouping for the Chicken menu.
  * Products not listed here will fall into an "Others" category.
  */

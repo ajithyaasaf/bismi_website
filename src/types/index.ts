@@ -71,6 +71,8 @@ export interface Order {
   totalAmount: number;
   deliveryType: DeliveryType;
   address: string;
+  deliveryZone?: string;      // Zone key from DELIVERY_ZONES (e.g. 'bus-stand')
+  deliveryZoneLabel?: string; // Human-readable zone label for admin display
   status: OrderStatus;
   deliveryTimeSlot?: string;  // e.g. "Morning (7AM – 10AM)" — kept for backward compat
   deliveryDate?: string;      // 'YYYY-MM-DD' — new: for slot control counting

@@ -10,7 +10,7 @@ import { useCart } from '@/context/CartContext';
 import ImageWithSkeleton from '@/components/ImageWithSkeleton';
 import { DeliveryType, OrderStatus } from '@/types';
 import { formatCurrency, validateMobile, generateIdempotencyToken, computeDeliveryCharge } from '@/lib/utils';
-import { SHOP_CONFIG } from '@/lib/config';
+import { SHOP_CONFIG, DELIVERY_ZONES, DELIVERY_RADIUS_KM } from '@/lib/config';
 import {
     getAvailableSlots,
     getTodayDateString,
@@ -29,6 +29,7 @@ export default function CheckoutPage() {
     const [mobile, setMobile] = useState('');
     const [deliveryType, setDeliveryType] = useState<DeliveryType>(DeliveryType.DELIVERY);
     const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null);
+    const [deliveryZone, setDeliveryZone] = useState('');
     const [address, setAddress] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -96,8 +97,13 @@ export default function CheckoutPage() {
         if (!mobile.trim()) newErrors.mobile = 'Mobile number is required';
         else if (!validateMobile(mobile.trim())) newErrors.mobile = 'Enter a valid 10-digit mobile number';
 
-        if (deliveryType === DeliveryType.DELIVERY && !address.trim()) {
-            newErrors.address = 'Address is required for delivery';
+        if (deliveryType === DeliveryType.DELIVERY) {
+            if (!deliveryZone) {
+                newErrors.deliveryZone = 'Please select your delivery area';
+            }
+            if (!address.trim()) {
+                newErrors.address = 'House number & street details are required';
+            }
         }
 
         if (subtotal < SHOP_CONFIG.minimumOrderAmount) {
@@ -149,6 +155,10 @@ export default function CheckoutPage() {
                 totalAmount: Number(total.toFixed(2)),
                 deliveryType,
                 address: deliveryType === DeliveryType.DELIVERY ? address.trim() : '',
+                deliveryZone: deliveryType === DeliveryType.DELIVERY ? deliveryZone : '',
+                deliveryZoneLabel: deliveryType === DeliveryType.DELIVERY
+                    ? (DELIVERY_ZONES.find(z => z.key === deliveryZone)?.label ?? '')
+                    : '',
                 status: OrderStatus.PENDING,
                 idempotencyToken,
                 createdAt: serverTimestamp(),
@@ -285,21 +295,65 @@ export default function CheckoutPage() {
                         {/* Address + Time Slot (only for delivery) */}
                         {deliveryType === DeliveryType.DELIVERY && (
                             <div className="space-y-4">
+                                {/* Step 1: Select Delivery Zone */}
                                 <div>
-                                    <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1.5">
-                                        Delivery Address *
+                                    <label htmlFor="deliveryZone" className="block text-sm font-medium text-gray-700 mb-1.5">
+                                        Delivery Area *
                                     </label>
-                                    <textarea
-                                        id="address"
-                                        value={address}
-                                        onChange={(e) => setAddress(e.target.value)}
-                                        placeholder="House/Flat, Street, Landmark, Town"
-                                        rows={3}
-                                        className={`w-full px-4 py-3 text-sm border-2 rounded-xl resize-none transition-colors ${errors.address ? 'border-red-400 bg-red-50' : 'border-gray-200'
-                                            }`}
-                                    />
-                                    {errors.address && <p className="mt-1 text-xs text-red-500">{errors.address}</p>}
+                                    <p className="text-xs text-gray-400 mb-2">
+                                        We deliver within {DELIVERY_RADIUS_KM} km of Mudukulathur
+                                    </p>
+                                    <select
+                                        id="deliveryZone"
+                                        value={deliveryZone}
+                                        onChange={(e) => setDeliveryZone(e.target.value)}
+                                        className={`w-full px-4 py-3 text-sm border-2 rounded-xl transition-colors appearance-none bg-white cursor-pointer ${
+                                            errors.deliveryZone ? 'border-red-400 bg-red-50' : 'border-gray-200'
+                                        }`}
+                                    >
+                                        <option value="">— Select your area —</option>
+                                        {DELIVERY_ZONES.map((zone) => (
+                                            <option key={zone.key} value={zone.key}>
+                                                {zone.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    {errors.deliveryZone && <p className="mt-1 text-xs text-red-500">{errors.deliveryZone}</p>}
+
+                                    {/* Warning for "Other" zone */}
+                                    {deliveryZone === 'other' && (
+                                        <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2">
+                                            <span className="text-base leading-none">⚠️</span>
+                                            <p className="text-xs text-amber-700">
+                                                Delivery is strictly within {DELIVERY_RADIUS_KM} km of Mudukulathur town.
+                                                Orders outside this radius will be cancelled.
+                                                Please mention your area clearly below.
+                                            </p>
+                                        </div>
+                                    )}
                                 </div>
+
+                                {/* Step 2: Detailed House Address (only after zone is selected) */}
+                                {deliveryZone && (
+                                    <div className="animate-fade-in">
+                                        <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1.5">
+                                            House No. & Street Details *
+                                        </label>
+                                        <textarea
+                                            id="address"
+                                            value={address}
+                                            onChange={(e) => setAddress(e.target.value)}
+                                            placeholder="e.g. Door No. 12/4, 2nd Cross Street, Near Post Office, Yellow color house"
+                                            rows={3}
+                                            className={`w-full px-4 py-3 text-sm border-2 rounded-xl resize-none transition-colors ${errors.address ? 'border-red-400 bg-red-50' : 'border-gray-200'
+                                                }`}
+                                        />
+                                        {errors.address && <p className="mt-1 text-xs text-red-500">{errors.address}</p>}
+                                        <p className="mt-1 text-xs text-gray-400">
+                                            Include house number, street name, and a nearby landmark so our delivery boy can find you easily.
+                                        </p>
+                                    </div>
+                                )}
 
                                 {/* Delivery Time Slot — Dynamic */}
                                 <div>
