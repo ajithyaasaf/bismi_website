@@ -22,7 +22,8 @@ export default function ProductCard({ product }: ProductCardProps) {
     const [showSheet, setShowSheet] = useState(false);
     const [addedAnimation, setAddedAnimation] = useState(false);
     const [isImageLoading, setIsImageLoading] = useState(true);
-    const { addItem } = useCart();
+    const { items, addItem, updateQuantity, removeItem } = useCart();
+    const cartItem = items.find(item => item.meatTypeId === product.id);
 
     const isPerPiece = product.unit === 'piece';
     const isAvailableToday = product.isAvailableToday !== false; // Treats undefined as true
@@ -30,6 +31,40 @@ export default function ProductCard({ product }: ProductCardProps) {
     const flashAdded = () => {
         setAddedAnimation(true);
         setTimeout(() => setAddedAnimation(false), 1500);
+    };
+
+    // Helper functions for inline quantity changes
+    const handleIncrement = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!cartItem) return;
+        if (isPerPiece) {
+            const currentQty = cartItem.pieces ?? 1;
+            updateQuantity(product.id, currentQty + 1);
+        } else {
+            const currentQty = cartItem.kg ?? 0.5;
+            updateQuantity(product.id, currentQty + 0.25);
+        }
+        trackEvent('add_to_cart', 'cart', product.name);
+    };
+
+    const handleDecrement = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!cartItem) return;
+        if (isPerPiece) {
+            const currentQty = cartItem.pieces ?? 1;
+            if (currentQty - 1 <= 0) {
+                removeItem(product.id);
+            } else {
+                updateQuantity(product.id, currentQty - 1);
+            }
+        } else {
+            const currentQty = cartItem.kg ?? 0.5;
+            if (currentQty - 0.25 < 0.5) {
+                removeItem(product.id);
+            } else {
+                updateQuantity(product.id, currentQty - 0.25);
+            }
+        }
     };
 
     // Handler for kg-based products
@@ -94,6 +129,12 @@ export default function ProductCard({ product }: ProductCardProps) {
         trackEvent('buy_now', 'cart', product.name);
         router.push('/checkout');
     };
+
+    const qtyDisplay = cartItem
+        ? isPerPiece
+            ? `${cartItem.pieces} pcs`
+            : `${cartItem.kg} kg`
+        : '';
 
     return (
         <>
@@ -176,17 +217,39 @@ export default function ProductCard({ product }: ProductCardProps) {
                             </span>
                         </div>
                         {/* Full-width CTA */}
-                        <button
-                            onClick={(e) => { e.stopPropagation(); if (isAvailableToday) setShowSelector(true); }}
-                            disabled={!isAvailableToday}
-                            className={`w-full py-2 text-sm font-bold rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-red-500/20 transition-all ${isAvailableToday
-                                ? 'text-white bg-red-600 hover:bg-red-700 active:bg-red-800'
-                                : 'text-gray-400 bg-gray-100 cursor-not-allowed border border-gray-200'
-                                }`}
-                            aria-label={`Add ${product.name} to cart`}
-                        >
-                            {isAvailableToday ? 'Add to Cart' : 'Unavailable'}
-                        </button>
+                        {cartItem ? (
+                            <div className="flex items-center justify-between w-full bg-red-50 border border-red-200 text-red-600 rounded-xl font-bold py-1.5 px-3">
+                                <button
+                                    onClick={handleDecrement}
+                                    className="w-8 h-8 flex items-center justify-center hover:bg-red-100 rounded-lg text-lg font-black transition-colors"
+                                    aria-label="Decrease quantity"
+                                >
+                                    −
+                                </button>
+                                <span className="text-sm font-bold min-w-[70px] text-center text-gray-900">
+                                    {qtyDisplay}
+                                </span>
+                                <button
+                                    onClick={handleIncrement}
+                                    className="w-8 h-8 flex items-center justify-center hover:bg-red-100 rounded-lg text-lg font-black transition-colors"
+                                    aria-label="Increase quantity"
+                                >
+                                    +
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); if (isAvailableToday) setShowSelector(true); }}
+                                disabled={!isAvailableToday}
+                                className={`w-full py-2.5 text-sm font-bold rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-red-500/20 transition-all ${isAvailableToday
+                                    ? 'text-white bg-red-600 hover:bg-red-700 active:bg-red-800'
+                                    : 'text-gray-400 bg-gray-100 cursor-not-allowed border border-gray-200'
+                                    }`}
+                                aria-label={`Add ${product.name} to cart`}
+                            >
+                                {isAvailableToday ? 'Add to Cart' : 'Unavailable'}
+                            </button>
+                        )}
                     </div>
 
                     {/* ── Tablet / Desktop layout (sm and above) ── */}
@@ -199,17 +262,39 @@ export default function ProductCard({ product }: ProductCardProps) {
                                 {isPerPiece ? '/pc' : '/kg'}
                             </span>
                         </div>
-                        <button
-                            onClick={(e) => { e.stopPropagation(); if (isAvailableToday) setShowSelector(true); }}
-                            disabled={!isAvailableToday}
-                            className={`shrink-0 px-5 py-2.5 text-base font-bold rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-red-500/20 transition-all ${isAvailableToday
-                                ? 'text-white bg-red-600 hover:bg-red-700 active:bg-red-800'
-                                : 'text-gray-400 bg-gray-100 cursor-not-allowed border border-gray-200'
-                                }`}
-                            aria-label={`Add ${product.name} to cart`}
-                        >
-                            {isAvailableToday ? 'Add' : 'Unavailable'}
-                        </button>
+                        {cartItem ? (
+                            <div className="flex items-center justify-between w-[120px] shrink-0 bg-red-50 border border-red-200 text-red-600 rounded-xl font-bold py-1 px-2">
+                                <button
+                                    onClick={handleDecrement}
+                                    className="w-7 h-7 flex items-center justify-center hover:bg-red-100 rounded-lg text-base font-black transition-colors"
+                                    aria-label="Decrease quantity"
+                                >
+                                    −
+                                </button>
+                                <span className="text-sm font-bold flex-1 text-center text-gray-900">
+                                    {qtyDisplay}
+                                </span>
+                                <button
+                                    onClick={handleIncrement}
+                                    className="w-7 h-7 flex items-center justify-center hover:bg-red-100 rounded-lg text-base font-black transition-colors"
+                                    aria-label="Increase quantity"
+                                >
+                                    +
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={(e) => { e.stopPropagation(); if (isAvailableToday) setShowSelector(true); }}
+                                disabled={!isAvailableToday}
+                                className={`shrink-0 px-5 py-2.5 text-base font-bold rounded-xl shadow-sm focus:outline-none focus:ring-4 focus:ring-red-500/20 transition-all ${isAvailableToday
+                                    ? 'text-white bg-red-600 hover:bg-red-700 active:bg-red-800'
+                                    : 'text-gray-400 bg-gray-100 cursor-not-allowed border border-gray-200'
+                                    }`}
+                                aria-label={`Add ${product.name} to cart`}
+                            >
+                                {isAvailableToday ? 'Add' : 'Unavailable'}
+                            </button>
+                        )}
                     </div>
 
                 </div>
