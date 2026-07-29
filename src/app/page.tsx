@@ -4,7 +4,6 @@ import CloudinaryVideo from '@/components/CloudinaryVideo';
 import TodayAvailableStrip from '@/components/TodayAvailableStrip';
 import CategoryGrid from '@/components/CategoryGrid';
 import BestSellers from '@/components/BestSellers';
-import TrustBadges from '@/components/TrustBadges';
 import Testimonials from '@/components/Testimonials';
 import WhyChooseUs from '@/components/WhyChooseUs';
 import TrackedLink from '@/components/TrackedLink';
@@ -47,17 +46,8 @@ export default function HomePage() {
         {/* ─── Best Sellers Section ───────────────── */}
         <BestSellers />
 
-        {/* ─── Categories Section ─────────────────── */}
-        <section className="max-w-7xl mx-auto px-4 py-12 sm:py-16">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 tracking-tight">Explore Our Menu</h2>
-            <p className="text-gray-500 font-medium">Find exactly what you are looking for</p>
-          </div>
-          <CategoryGrid />
-        </section>
-
-        {/* ─── Trust Badges ───────────────────────── */}
-        <TrustBadges />
+        {/* ─── Explore Our Menu Section ───────────── */}
+        <CategoryGrid />
 
         {/* ─── Testimonials ───────────────────────── */}
         <Testimonials />

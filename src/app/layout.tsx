@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Playfair_Display, Caveat } from 'next/font/google';
 import { CartProvider } from '@/context/CartContext';
 import ServiceWorkerRegistrar from '@/components/ServiceWorkerRegistrar';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
@@ -12,6 +12,18 @@ const inter = Inter({
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-inter',
+});
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-playfair',
+});
+
+const caveat = Caveat({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-caveat',
 });
 
 export const viewport: Viewport = {
@@ -81,7 +93,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={inter.variable} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} ${playfair.variable} ${caveat.variable}`} suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"

@@ -17,6 +17,16 @@
   --color-brand-light: var(--brand-red-light);
   --color-brand-warm: var(--brand-warm);
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: var(--font-playfair), Georgia, serif;
+  --font-cursive: var(--font-caveat), cursive;
+}
+
+.font-serif-luxury {
+  font-family: var(--font-playfair), Georgia, serif;
+}
+
+.font-cursive-accent {
+  font-family: var(--font-caveat), cursive;
 }
 
 /* ─── Scrollbar Lock Fix ────────────────────────────────────────────────────
