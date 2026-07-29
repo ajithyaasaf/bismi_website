@@ -6,6 +6,7 @@
   --brand-red: #D32F2F;
   --brand-red-dark: #B71C1C;
   --brand-red-light: #FFEBEE;
+  --brand-burgundy: #6B141E;
   --brand-warm: #FFF8F0;
 }
 
@@ -15,6 +16,7 @@
   --color-brand: var(--brand-red);
   --color-brand-dark: var(--brand-red-dark);
   --color-brand-light: var(--brand-red-light);
+  --color-brand-burgundy: var(--brand-burgundy);
   --color-brand-warm: var(--brand-warm);
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-serif: var(--font-playfair), Georgia, serif;

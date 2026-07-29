@@ -278,7 +278,7 @@ export default function CategoryGrid() {
       {/* ─── Bottom Organic Wave Transition ─── */}
       <div className="w-full overflow-hidden leading-none z-0 relative">
         <svg
-          className="relative block w-full h-16 sm:h-24 lg:h-32 text-[#3b4d32]"
+          className="relative block w-full h-16 sm:h-24 lg:h-32 text-brand-burgundy"
           viewBox="0 0 1200 120"
           preserveAspectRatio="none"
         >
