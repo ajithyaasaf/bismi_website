@@ -40,6 +40,7 @@ export default function CategoryGrid() {
         const visible = new Set<CategoryId>(
           checks.filter((c) => c.hasActive).map((c) => c.id)
         );
+
         setVisibleIds(visible);
       } catch {
         if (!cancelled) {

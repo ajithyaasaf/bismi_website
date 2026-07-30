@@ -1,125 +1,196 @@
+import Image from 'next/image';
 import { SHOP_CONFIG } from '@/lib/config';
 
 export default function WhyChooseUs() {
-    return (
-        <section className="bg-gray-50 border-t border-gray-100 overflow-hidden relative">
-            {/* Subtle background decoration */}
-            <div className="absolute top-0 right-0 -translate-y-12 translate-x-1/3 opacity-5 w-96 h-96 bg-[radial-gradient(circle,rgba(0,0,0,1)_0%,rgba(0,0,0,0)_70%)] rounded-full hidden lg:block pointer-events-none"></div>
+  return (
+    <section className="relative bg-[#fbf9f5] py-16 sm:py-24 overflow-hidden select-none">
+      {/* ─── Bottom-Left Farm Lineart Watermark ─── */}
+      <div className="absolute bottom-0 left-0 z-0 pointer-events-none w-72 sm:w-96 lg:w-[520px] opacity-20 mix-blend-multiply">
+        <Image
+          src="/assets/images/why-choose-us/farm_lineart_bg.png"
+          alt="Farm Lineart Background"
+          width={1000}
+          height={600}
+          className="w-full h-auto object-contain object-bottom-left"
+        />
+      </div>
 
-            <div className="max-w-7xl mx-auto px-4 py-16 sm:py-24">
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-10 items-center">
+          
+          {/* ─── Left Column: Process Steps ─── */}
+          <div className="lg:col-span-6">
+            <span className="text-[#c81e1e] font-bold tracking-widest uppercase text-xs sm:text-sm mb-2 block">
+              HOW WE WORK
+            </span>
 
-                    {/* Left side: Steps/Farm to Table */}
-                    <div>
-                        <div className="mb-10">
-                            <span className="text-red-600 font-bold tracking-wider uppercase text-sm mb-2 block">How We Work</span>
-                            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight leading-tight">Fresh From Farm To Your Table</h2>
-                            <p className="mt-4 text-gray-600 text-lg">We&apos;ve eliminated the middlemen to bring you the highest quality meat, faster and fresher than your local market.</p>
-                        </div>
+            <h2 className="text-3xl sm:text-5xl lg:text-5xl font-semibold text-[#1e293b] font-serif-luxury tracking-tight leading-tight mb-4">
+              Fresh From Farm <br />
+              <span className="text-[#2d5a3f]">To Your Table</span>
+            </h2>
 
-                        <div className="space-y-8 relative before:absolute before:inset-0 before:ml-6 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
-                            {[
-                                {
-                                    step: "01",
-                                    title: 'Sourced Fresh Daily',
-                                    desc: 'Early morning sourcing ensures you only get meat processed the very same day.',
-                                    icon: '🐓'
-                                },
-                                {
-                                    step: "02",
-                                    title: 'Custom Cleaned & Cut',
-                                    desc: 'Prepared to your exact preference in our state-of-the-art hygienic facility.',
-                                    icon: '🔪'
-                                },
-                                {
-                                    step: "03",
-                                    title: 'Fast, Free Delivery',
-                                    desc: `Fastest delivery to your doorstep, absolutely free.`,
-                                    icon: '🛵'
-                                },
-                            ].map((item, index) => (
-                                <div key={index} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                                    <div className="flex items-center justify-center w-12 h-12 rounded-full border border-white bg-red-100 text-red-600 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 transition-transform group-hover:scale-110">
-                                        <span className="text-xl">{item.icon}</span>
-                                    </div>
-                                    <div className="w-[calc(100%-4rem)] md:w-[calc(50%-3rem)] bg-white p-5 rounded-2xl shadow-sm border border-gray-100 group-hover:border-red-100 group-hover:shadow-md transition-all">
-                                        <div className="flex items-center gap-3 mb-2">
-                                            <span className="text-sm font-bold text-gray-300">{item.step}</span>
-                                            <h3 className="font-bold text-gray-900 text-lg">{item.title}</h3>
-                                        </div>
-                                        <p className="text-gray-500 text-sm leading-relaxed">{item.desc}</p>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+            <p className="text-gray-600 text-sm sm:text-base leading-relaxed mb-8 max-w-lg">
+              We&apos;ve eliminated the middlemen to bring you the highest quality meat, faster and fresher than your local market.
+            </p>
 
-                    {/* Right side: Delivery Promise Card */}
-                    <div className="lg:pl-8">
-                        <div className="bg-gradient-to-br from-red-600 to-red-800 rounded-3xl p-8 sm:p-10 text-white shadow-2xl shadow-red-900/20 relative overflow-hidden">
-                            {/* Decorative elements */}
-                            <div className="absolute top-0 right-0 p-8 opacity-10">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-32 h-32">
-                                    <path d="M3.375 4.5C2.339 4.5 1.5 5.34 1.5 6.375V13.5h12V6.375c0-1.036-.84-1.875-1.875-1.875h-8.25ZM13.5 15h-12v2.625c0 1.035.84 1.875 1.875 1.875h.375a3 3 0 1 0 6 0h3a.75.75 0 0 0 .75-.75V15Z" />
-                                    <path d="M8.25 19.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0ZM15.75 6.75a.75.75 0 0 0-.75.75v11.25c0 .087.015.17.042.248a3 3 0 0 1 5.958.464c.853-.175 1.522-.935 1.464-1.883a18.659 18.659 0 0 0-3.732-10.104 1.837 1.837 0 0 0-1.47-.725H15.75Z" />
-                                    <path d="M19.5 19.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
-                                </svg>
-                            </div>
+            {/* Step Timeline Container */}
+            <div className="relative space-y-5 sm:space-y-6 max-w-xl">
+              {/* Vertical Pink Dashed Timeline Line */}
+              <div className="absolute left-[27px] sm:left-[31px] top-8 bottom-8 w-[2px] border-l-2 border-dashed border-[#e8a5a5] z-0" />
 
-                            <div className="relative z-10">
-                                <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-sm font-semibold mb-6">
-                                    <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-                                    Delivering Now
-                                </div>
-
-                                <h3 className="text-3xl font-extrabold mb-4 leading-tight">Free Delivery <br />On Every Order!</h3>
-                                <p className="text-red-100 text-lg mb-8 leading-relaxed max-w-sm">
-                                    We deliver to all areas within town absolutely free. No hidden fees, no surge pricing.
-                                </p>
-
-                                <div className="space-y-4">
-                                    <div className="flex bg-black/20 rounded-xl p-4 backdrop-blur-sm border border-white/10">
-                                        <div className="mr-4 mt-1 opacity-80">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-lg">{SHOP_CONFIG.estimatedDeliveryTime}</p>
-                                            <p className="text-sm text-red-200">Guaranteed Service</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex bg-black/20 rounded-xl p-4 backdrop-blur-sm border border-white/10">
-                                        <div className="mr-4 mt-1 opacity-80">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-lg">Cash on Delivery</p>
-                                            <p className="text-sm text-red-200">Pay when you receive</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex bg-black/20 rounded-xl p-4 backdrop-blur-sm border border-white/10">
-                                        <div className="mr-4 mt-1 opacity-80">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-lg">{SHOP_CONFIG.currency}{SHOP_CONFIG.minimumOrderAmount} Min Order</p>
-                                            <p className="text-sm text-red-200">For free delivery to apply</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
+              {/* Step 01 */}
+              <div className="relative flex items-center gap-4 sm:gap-5 z-10 group">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white shadow-md flex items-center justify-center p-1.5 shrink-0 z-10 group-hover:scale-105 transition-transform">
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#fde8ea] flex items-center justify-center text-[#1e293b]">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M17.5 3C15 3 13 5 12 6.5C11 5 9 3 6.5 3C3.5 3 1.5 5.5 1.5 8.5C1.5 13.5 12 21 12 21C12 21 22.5 13.5 22.5 8.5C22.5 5.5 20.5 3 17.5 3Z" fill="none" />
+                      <path d="M21 3C17 3 13 6 12 10C11 6 7 3 3 3C3 10 7 14 12 21C17 14 21 10 21 3Z" />
+                    </svg>
+                  </div>
                 </div>
+                <div className="flex-1 bg-white rounded-2xl p-4 sm:p-5 shadow-xs border border-gray-100/90 group-hover:border-red-100 group-hover:shadow-md transition-all">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[#c81e1e] font-bold text-sm sm:text-base">01</span>
+                    <h3 className="font-bold text-gray-900 text-sm sm:text-base">Sourced Fresh Daily</h3>
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
+                    We partner with local farms and source only the best, freshest meat every morning.
+                  </p>
+                </div>
+              </div>
+
+              {/* Step 02 */}
+              <div className="relative flex items-center gap-4 sm:gap-5 z-10 group">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white shadow-md flex items-center justify-center p-1.5 shrink-0 z-10 group-hover:scale-105 transition-transform">
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#fde8ea] flex items-center justify-center text-[#1e293b]">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M19.778 4.222c-2.343-2.344-6.142-2.344-8.485 0L3.121 12.393c-.39.39-.39 1.024 0 1.415l4.243 4.242c.39.391 1.024.391 1.414 0l8.172-8.172c2.343-2.343 2.343-6.142 0-8.485zm-2.122 6.364l-6.757 6.757-2.828-2.828 6.757-6.757 2.828 2.828z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="flex-1 bg-white rounded-2xl p-4 sm:p-5 shadow-xs border border-gray-100/90 group-hover:border-red-100 group-hover:shadow-md transition-all">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[#c81e1e] font-bold text-sm sm:text-base">02</span>
+                    <h3 className="font-bold text-gray-900 text-sm sm:text-base">Custom Cleaned & Cut</h3>
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
+                    Prepared to your exact preference in our state-of-the-art hygienic facility.
+                  </p>
+                </div>
+              </div>
+
+              {/* Step 03 */}
+              <div className="relative flex items-center gap-4 sm:gap-5 z-10 group">
+                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-white shadow-md flex items-center justify-center p-1.5 shrink-0 z-10 group-hover:scale-105 transition-transform">
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-[#fde8ea] flex items-center justify-center text-[#1e293b]">
+                    <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M19 7h-3V6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h1c0 1.66 1.34 3 3 3s3-1.34 3-3h4c0 1.66 1.34 3 3 3s3-1.34 3-3h1c.55 0 1-.45 1-1v-5l-3-4zM6 19.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm12 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM16 11V8.5h2.5l2.1 2.5H16z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="flex-1 bg-white rounded-2xl p-4 sm:p-5 shadow-xs border border-gray-100/90 group-hover:border-red-100 group-hover:shadow-md transition-all">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-[#c81e1e] font-bold text-sm sm:text-base">03</span>
+                    <h3 className="font-bold text-gray-900 text-sm sm:text-base">Fast, Free Delivery</h3>
+                  </div>
+                  <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">
+                    Delivered quickly to your doorstep, absolutely free.
+                  </p>
+                </div>
+              </div>
             </div>
-        </section>
-    );
+          </div>
+
+          {/* ─── Right Column: Delivery Card ─── */}
+          <div className="lg:col-span-6 relative">
+            <div className="relative rounded-[32px] sm:rounded-[36px] bg-gradient-to-br from-[#c81e1e] via-[#b71c1c] to-[#991515] p-6 sm:p-10 shadow-2xl border border-red-700/30 text-white z-10">
+              
+              {/* Live Status Pill */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/20 backdrop-blur-md border border-white/20 text-xs font-semibold text-white mb-5">
+                <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+                Delivering Now
+              </div>
+
+              {/* Delivery Title */}
+              <h3 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif-luxury leading-tight mb-3 text-white">
+                Free Delivery <br />
+                On Every Order!
+              </h3>
+
+              <p className="text-white/85 text-xs sm:text-sm leading-relaxed mb-6 max-w-xs sm:max-w-sm">
+                We deliver to all areas within town absolutely free. No hidden fees, no surge pricing.
+              </p>
+
+              {/* 3D Scooter Delivery Rider Image */}
+              <div className="absolute -top-4 -right-4 sm:-top-8 sm:-right-8 w-44 sm:w-60 lg:w-72 h-auto pointer-events-none z-20 drop-shadow-2xl">
+                <Image
+                  src="/assets/images/why-choose-us/delivery_guy_scooter.png"
+                  alt="3D Delivery Scooter Rider"
+                  width={800}
+                  height={800}
+                  className="w-full h-auto object-contain"
+                  priority
+                />
+              </div>
+
+              {/* 3 Feature Highlight Cards */}
+              <div className="space-y-3 relative z-10 max-w-md">
+                {/* Feature 1 */}
+                <div className="flex items-center gap-3.5 bg-black/20 backdrop-blur-md rounded-2xl p-3.5 sm:p-4 border border-white/10 hover:bg-black/25 transition-all">
+                  <div className="w-10 h-10 rounded-full bg-white text-[#b71c1c] flex items-center justify-center shrink-0 shadow-sm">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white text-sm sm:text-base">{SHOP_CONFIG.estimatedDeliveryTime}</h4>
+                    <p className="text-xs text-white/70">Guaranteed Service</p>
+                  </div>
+                </div>
+
+                {/* Feature 2 */}
+                <div className="flex items-center gap-3.5 bg-black/20 backdrop-blur-md rounded-2xl p-3.5 sm:p-4 border border-white/10 hover:bg-black/25 transition-all">
+                  <div className="w-10 h-10 rounded-full bg-white text-[#b71c1c] flex items-center justify-center shrink-0 shadow-sm">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white text-sm sm:text-base">Cash on Delivery</h4>
+                    <p className="text-xs text-white/70">Pay when you receive</p>
+                  </div>
+                </div>
+
+                {/* Feature 3 */}
+                <div className="flex items-center gap-3.5 bg-black/20 backdrop-blur-md rounded-2xl p-3.5 sm:p-4 border border-white/10 hover:bg-black/25 transition-all">
+                  <div className="w-10 h-10 rounded-full bg-white text-[#b71c1c] flex items-center justify-center shrink-0 shadow-sm">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-white text-sm sm:text-base">{SHOP_CONFIG.currency}{SHOP_CONFIG.minimumOrderAmount} Min Order</h4>
+                    <p className="text-xs text-white/70">For free delivery to apply</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom-Right Leaf Sprig PNG */}
+            <div className="absolute -bottom-8 -right-8 w-28 sm:w-40 lg:w-48 h-auto pointer-events-none z-20 drop-shadow-lg">
+              <Image
+                src="/assets/images/why-choose-us/bottom_right_leaf.png"
+                alt="Leaf Sprig Decorator"
+                width={500}
+                height={500}
+                className="w-full h-auto object-contain"
+              />
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+    </section>
+  );
 }
