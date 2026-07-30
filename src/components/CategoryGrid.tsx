@@ -68,7 +68,7 @@ export default function CategoryGrid() {
         />
       </div>
 
-      <div className="absolute top-0 right-0 z-0 pointer-events-none w-20 sm:w-48 lg:w-60 max-w-[20vw] sm:max-w-[28vw] opacity-90">
+      <div className="hidden sm:block absolute top-0 right-0 z-0 pointer-events-none sm:w-48 lg:w-60 sm:max-w-[28vw] opacity-90">
         <Image
           src="/assets/images/menu-section/top_right_herbs.png"
           alt="Top Right Herbs"
@@ -127,7 +127,7 @@ export default function CategoryGrid() {
         </div>
 
         <h2 className="text-3xl sm:text-5xl lg:text-6xl font-semibold text-[#1e293b] font-serif-luxury tracking-tight mb-3">
-          Explore Our Menu
+          Explore Our <span className="text-[#c81e1e]">Menu</span>
         </h2>
 
         <p className="text-xs sm:text-base text-gray-500 font-medium mb-4 tracking-wide">
