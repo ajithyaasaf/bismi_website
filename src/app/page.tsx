@@ -1,6 +1,6 @@
+import Image from 'next/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import CloudinaryVideo from '@/components/CloudinaryVideo';
 import TodayAvailableStrip from '@/components/TodayAvailableStrip';
 import CategoryGrid from '@/components/CategoryGrid';
 import BestSellers from '@/components/BestSellers';
@@ -16,27 +16,30 @@ export default function HomePage() {
       <main className="flex-1">
         {/* ─── Hero Section ──────────────────────── */}
         <section className="relative w-full bg-black">
-          {/* Desktop Banner Video (Cloudinary) */}
-          <div className="hidden sm:block">
-            <CloudinaryVideo
-              publicId="bismi-broilers/hero_banner_video_v2"
+          {/* Desktop Banner Image */}
+          <div className="hidden sm:block w-full">
+            <Image
+              src="/assets/images/hero-sections/desktop-1.png"
+              alt="Bismi Broilers Hero Banner"
+              width={1920}
+              height={1080}
+              priority
+              sizes="100vw"
               className="w-full h-auto block"
             />
           </div>
 
-          {/* Mobile Banner Video (Local) */}
-          <div className="block sm:hidden">
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              preload="auto"
+          {/* Mobile Banner Image */}
+          <div className="block sm:hidden w-full">
+            <Image
+              src="/assets/images/hero-sections/mobile-1.png"
+              alt="Bismi Broilers Mobile Banner"
+              width={1080}
+              height={1920}
+              priority
+              sizes="100vw"
               className="w-full h-auto block"
-            >
-              <source src="/assets/images/banner_mobile.mp4" type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
+            />
           </div>
         </section>
 
