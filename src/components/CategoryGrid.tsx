@@ -57,7 +57,7 @@ export default function CategoryGrid() {
   return (
     <section className="relative bg-[#fbf9f5] pt-12 sm:pt-16 pb-0 overflow-hidden select-none">
       {/* ─── Background Corner Spices & Herbs ─── */}
-      <div className="absolute top-0 left-0 z-0 pointer-events-none w-32 sm:w-48 lg:w-60 max-w-[28vw] opacity-90">
+      <div className="absolute top-0 left-0 z-0 pointer-events-none w-20 sm:w-48 lg:w-60 max-w-[20vw] sm:max-w-[28vw] opacity-90">
         <Image
           src="/assets/images/menu-section/top_left_spices.png"
           alt="Top Left Spices"
@@ -67,7 +67,7 @@ export default function CategoryGrid() {
         />
       </div>
 
-      <div className="absolute top-0 right-0 z-0 pointer-events-none w-32 sm:w-48 lg:w-60 max-w-[28vw] opacity-90">
+      <div className="absolute top-0 right-0 z-0 pointer-events-none w-20 sm:w-48 lg:w-60 max-w-[20vw] sm:max-w-[28vw] opacity-90">
         <Image
           src="/assets/images/menu-section/top_right_herbs.png"
           alt="Top Right Herbs"
