@@ -9,6 +9,9 @@ import WhyChooseUs from '@/components/WhyChooseUs';
 import TrackedLink from '@/components/TrackedLink';
 import { SHOP_CONFIG } from '@/lib/config';
 
+import desktopBanner from '../../public/assets/images/hero-sections/desktop-1.png';
+import mobileBanner from '../../public/assets/images/hero-sections/mobile-1.png';
+
 export default function HomePage() {
   return (
     <>
@@ -19,12 +22,9 @@ export default function HomePage() {
           {/* Desktop Banner Image */}
           <div className="hidden sm:block w-full">
             <Image
-              src="/assets/images/hero-sections/desktop-1.png"
+              src={desktopBanner}
               alt="Bismi Broilers Hero Banner"
-              width={1920}
-              height={1080}
               priority
-              sizes="100vw"
               className="w-full h-auto block"
             />
           </div>
@@ -32,12 +32,9 @@ export default function HomePage() {
           {/* Mobile Banner Image */}
           <div className="block sm:hidden w-full">
             <Image
-              src="/assets/images/hero-sections/mobile-1.png"
+              src={mobileBanner}
               alt="Bismi Broilers Mobile Banner"
-              width={1080}
-              height={1920}
               priority
-              sizes="100vw"
               className="w-full h-auto block"
             />
           </div>
