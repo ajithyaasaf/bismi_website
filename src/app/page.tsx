@@ -9,7 +9,7 @@ import WhyChooseUs from '@/components/WhyChooseUs';
 import TrackedLink from '@/components/TrackedLink';
 import { SHOP_CONFIG } from '@/lib/config';
 
-import desktopBanner from '../../public/assets/images/hero-sections/desktop-1.png';
+import desktopBanner from '../../public/assets/images/hero-sections/desktop-2.png';
 import mobileBanner from '../../public/assets/images/hero-sections/mobile-1.png';
 
 export default function HomePage() {
