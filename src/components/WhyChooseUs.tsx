@@ -112,7 +112,7 @@ export default function WhyChooseUs() {
               </div>
 
               {/* Delivery Title */}
-              <h3 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif-luxury leading-tight mb-3 text-white">
+              <h3 className="text-2xl xs:text-3xl sm:text-4xl lg:text-5xl font-bold font-serif-luxury leading-tight mb-3 text-white max-w-[62%] sm:max-w-none">
                 Free Delivery <br />
                 On Every Order!
               </h3>
@@ -122,7 +122,7 @@ export default function WhyChooseUs() {
               </p>
 
               {/* 3D Scooter Delivery Rider Image */}
-              <div className="absolute -top-4 -right-4 sm:-top-8 sm:-right-8 w-44 sm:w-60 lg:w-72 h-auto pointer-events-none z-20 drop-shadow-2xl">
+              <div className="absolute -top-6 -right-4 sm:-top-10 sm:-right-10 w-52 xs:w-60 sm:w-72 lg:w-80 h-auto pointer-events-none z-20 drop-shadow-2xl">
                 <Image
                   src="/assets/images/why-choose-us/delivery_guy_scooter.png"
                   alt="3D Delivery Scooter Rider"
