@@ -65,7 +65,7 @@ export default function BestSellers() {
             <section className="max-w-7xl mx-auto px-4 py-8 sm:py-12">
                 <div className="flex justify-between items-end mb-6">
                     <div>
-                        <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Weekly <span className="text-[#c81e1e]">Best Sellers</span></h2>
+                        <h2 className="text-2xl sm:text-3xl font-bold font-serif-luxury text-gray-900 mb-1">Weekly <span className="text-[#c81e1e]">Best Sellers</span></h2>
                         <p className="text-gray-500 text-sm sm:text-base">Customer favorites, cut fresh every day</p>
                     </div>
                 </div>
@@ -86,7 +86,7 @@ export default function BestSellers() {
         <section className="max-w-7xl mx-auto px-4 py-8 sm:py-12 border-b border-gray-100">
             <div className="flex justify-between items-end mb-6">
                 <div>
-                    <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 tracking-tight">Weekly <span className="text-[#c81e1e]">Best Sellers</span></h2>
+                    <h2 className="text-2xl sm:text-3xl font-bold font-serif-luxury text-gray-900 mb-1 tracking-tight">Weekly <span className="text-[#c81e1e]">Best Sellers</span></h2>
                     <p className="text-gray-500 text-sm sm:text-base">Customer favorites, cut fresh every day</p>
                 </div>
                 <Link

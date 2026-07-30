@@ -17,7 +17,7 @@ export default function VisitOurShop() {
 
         {/* ─── Section Header ─── */}
         <div className="text-center mb-8">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-[#0f172a] tracking-tight mb-3">
+          <h2 className="text-3xl sm:text-4xl font-extrabold font-serif-luxury text-[#0f172a] tracking-tight mb-3">
             Visit Our <span className="text-[#c81e1e]">Shop</span>
           </h2>
           <p className="text-gray-500 font-medium text-sm sm:text-base max-w-2xl mx-auto leading-relaxed">

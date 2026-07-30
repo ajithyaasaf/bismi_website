@@ -43,7 +43,7 @@ export default function TrustBadges() {
         <section className="bg-gradient-to-br from-green-50 to-emerald-50 border-y border-green-100">
             <div className="max-w-7xl mx-auto px-4 py-12 sm:py-16">
                 <div className="text-center mb-10 max-w-2xl mx-auto">
-                    <h2 className="text-2xl sm:text-3xl font-extrabold text-green-900 mb-3 tracking-tight">Only The Best For Your Family</h2>
+                    <h2 className="text-2xl sm:text-3xl font-extrabold font-serif-luxury text-green-900 mb-3 tracking-tight">Only The Best For Your Family</h2>
                     <p className="text-green-700 font-medium">We maintain strict hygiene standards at every step, ensuring you get the cleanest, freshest meat possible.</p>
                 </div>
 

@@ -58,7 +58,7 @@ export default function Testimonials() {
         </div>
 
         {/* ─── Main Heading ─── */}
-        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#0f172a] text-center tracking-tight mb-2">
+        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold font-serif-luxury text-[#0f172a] text-center tracking-tight mb-2">
           Loved By Over <span className="text-[#e02424]">500+ Local Families</span>
         </h2>
 
