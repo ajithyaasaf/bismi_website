@@ -14,19 +14,20 @@ export default function Header() {
         <>
             <TopBar />
             <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+                <div className="max-w-7xl mx-auto px-4 h-16 sm:h-20 flex items-center justify-between">
                     {/* Logo & Brand */}
-                    <Link href="/" className="flex items-center gap-2.5 group">
-                        <Image
-                            src="/logo.jpg"
-                            alt={SHOP_CONFIG.name}
-                            width={40}
-                            height={40}
-                            className="rounded-full"
-                            priority
-                        />
-                        <div className="hidden sm:block">
-                            <h1 className="text-lg font-bold text-gray-900 leading-tight group-hover:text-red-600 transition-colors">
+                    <Link href="/" className="flex items-center gap-3 group">
+                        <div className="relative w-12 h-12 sm:w-16 sm:h-16 shrink-0 flex items-center justify-center">
+                            <Image
+                                src="/logo.png"
+                                alt={SHOP_CONFIG.name}
+                                fill
+                                className="object-contain"
+                                priority
+                            />
+                        </div>
+                        <div>
+                            <h1 className="text-base sm:text-2xl font-extrabold tracking-tight text-gray-900 leading-tight group-hover:text-red-600 transition-colors">
                                 {SHOP_CONFIG.name}
                             </h1>
                         </div>
