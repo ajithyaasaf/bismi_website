@@ -26,7 +26,7 @@ const SAVED_CUSTOMER_KEY = 'bismi_saved_customer';
 
 export default function CheckoutPage() {
     const router = useRouter();
-    const { items, subtotal, clearCart } = useCart();
+    const { items, subtotal, isHydrated, clearCart } = useCart();
 
     const [name, setName] = useState('');
     const [mobile, setMobile] = useState('');
@@ -34,6 +34,7 @@ export default function CheckoutPage() {
     const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('COD');
     const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null);
     const [deliveryZone, setDeliveryZone] = useState('');
+    const [isZoneOpen, setIsZoneOpen] = useState(false);
     const [address, setAddress] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -52,22 +53,39 @@ export default function CheckoutPage() {
     // UPI Intent Deep Link URL
     const upiIntentUrl = `upi://pay?pa=${SHOP_CONFIG.upiId}&pn=${encodeURIComponent(SHOP_CONFIG.name)}&am=${total.toFixed(2)}&cu=INR&tn=${encodeURIComponent('Meat Order Payment')}`;
 
-    // ─── Load Saved Customer Details on Mount ─────────────
+    const CHECKOUT_FORM_KEY = 'bismi_checkout_draft';
+
+    // ─── Load Saved / Draft Customer Details on Mount ───────
     useEffect(() => {
         try {
-            const savedRaw = localStorage.getItem(SAVED_CUSTOMER_KEY);
+            const savedRaw = localStorage.getItem(CHECKOUT_FORM_KEY) || localStorage.getItem(SAVED_CUSTOMER_KEY);
             if (savedRaw) {
                 const saved = JSON.parse(savedRaw);
                 if (saved.name) setName(saved.name);
                 if (saved.mobile) setMobile(saved.mobile);
-                if (saved.deliveryZone) setDeliveryZone(saved.deliveryZone);
+                if (saved.deliveryZone) {
+                    const matchedZone = DELIVERY_ZONES.find((z) => z.key === saved.deliveryZone || z.label === saved.deliveryZone);
+                    setDeliveryZone(matchedZone ? matchedZone.label : saved.deliveryZone);
+                }
                 if (saved.address) setAddress(saved.address);
                 setIsAutofilled(true);
             }
         } catch (err) {
-            console.warn('Failed to load saved customer details:', err);
+            console.warn('Failed to load draft customer details:', err);
         }
     }, []);
+
+    // ─── Auto-save Form Draft on Any Field Change ───────────
+    useEffect(() => {
+        try {
+            localStorage.setItem(
+                CHECKOUT_FORM_KEY,
+                JSON.stringify({ name, mobile, deliveryZone, address })
+            );
+        } catch (err) {
+            console.warn('Failed to save checkout draft:', err);
+        }
+    }, [name, mobile, deliveryZone, address]);
 
     // ─── Fetch Available Slots ────────────────────────────
     useEffect(() => {
@@ -97,12 +115,12 @@ export default function CheckoutPage() {
         trackEvent('checkout_start', 'checkout');
     }, []);
 
-    // Redirect if cart is empty — guarded so clearCart() during submit does NOT trigger this
+    // Redirect if cart is empty after hydration — guarded so clearCart() during submit does NOT trigger this
     useEffect(() => {
-        if (items.length === 0 && !submitting) {
+        if (isHydrated && items.length === 0 && !submitting) {
             router.replace('/cart');
         }
-    }, [items.length, submitting, router]);
+    }, [isHydrated, items.length, submitting, router]);
 
     const handleCopyUpi = () => {
         navigator.clipboard.writeText(SHOP_CONFIG.upiId);
@@ -358,52 +376,123 @@ export default function CheckoutPage() {
                             </button>
                         </div>
 
-                        {/* Rural Landmark-Based Address */}
+                        {/* Ultra-Clean Rural Address Form */}
                         {deliveryType === DeliveryType.DELIVERY && (
-                            <div className="space-y-4 pt-2">
+                            <div className="space-y-4 pt-1">
+                                {/* Village / Area Field with Suggestions */}
                                 <div>
-                                    <label htmlFor="deliveryZone" className="block text-sm font-medium text-gray-700 mb-1.5">
+                                    <label htmlFor="deliveryZone" className="block text-sm font-semibold text-gray-800 mb-1.5">
                                         Village / Delivery Area *
                                     </label>
-                                    <select
-                                        id="deliveryZone"
-                                        value={deliveryZone}
-                                        onChange={(e) => setDeliveryZone(e.target.value)}
-                                        className={`w-full px-4 py-3 text-sm border-2 rounded-xl transition-colors bg-white cursor-pointer ${
-                                            errors.deliveryZone ? 'border-red-400 bg-red-50' : 'border-gray-200'
-                                        }`}
-                                    >
-                                        <option value="">— Select your area or village —</option>
-                                        {DELIVERY_ZONES.map((zone) => (
-                                            <option key={zone.key} value={zone.key}>
-                                                {zone.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    {errors.deliveryZone && <p className="mt-1 text-xs text-red-500">{errors.deliveryZone}</p>}
+                                    <div className="relative">
+                                        <input
+                                            id="deliveryZone"
+                                            type="text"
+                                            value={deliveryZone}
+                                            onFocus={() => setIsZoneOpen(true)}
+                                            onBlur={() => setTimeout(() => setIsZoneOpen(false), 200)}
+                                            onChange={(e) => {
+                                                setDeliveryZone(e.target.value);
+                                                setIsZoneOpen(true);
+                                            }}
+                                            placeholder="Type or select your village / area..."
+                                            className={`w-full pl-4 pr-10 py-3 text-sm border-2 rounded-xl transition-all outline-none ${
+                                                errors.deliveryZone
+                                                    ? 'border-red-400 bg-red-50'
+                                                    : 'border-gray-200 focus:border-red-500 focus:bg-white'
+                                            }`}
+                                        />
+                                        {deliveryZone && (
+                                            <button
+                                                type="button"
+                                                onMouseDown={(e) => {
+                                                    e.preventDefault();
+                                                    setDeliveryZone('');
+                                                }}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs font-bold bg-gray-100 hover:bg-gray-200 rounded-full w-5 h-5 flex items-center justify-center transition-colors"
+                                            >
+                                                ✕
+                                            </button>
+                                        )}
+
+                                        {/* Floating White Dropdown - Compact, Max 3-4 items visible, scrollable */}
+                                        {isZoneOpen && (
+                                            <div
+                                                style={{ maxHeight: '160px', overflowY: 'auto' }}
+                                                className="absolute left-0 right-0 top-full mt-1 z-50 bg-white border border-gray-200 rounded-xl shadow-xl divide-y divide-gray-100"
+                                            >
+                                                {(() => {
+                                                    const exactMatch = DELIVERY_ZONES.some((z) => z.label === deliveryZone);
+                                                    const visibleZones = exactMatch || !deliveryZone.trim()
+                                                        ? DELIVERY_ZONES
+                                                        : DELIVERY_ZONES.filter((z) =>
+                                                            z.label.toLowerCase().includes(deliveryZone.toLowerCase())
+                                                        );
+
+                                                    return visibleZones.length > 0 ? (
+                                                        visibleZones.map((zone) => {
+                                                            const isSelected = deliveryZone === zone.label;
+                                                            return (
+                                                                <button
+                                                                    key={zone.key}
+                                                                    type="button"
+                                                                    onMouseDown={(e) => {
+                                                                        e.preventDefault();
+                                                                        setDeliveryZone(zone.label);
+                                                                        setIsZoneOpen(false);
+                                                                    }}
+                                                                    className={`w-full px-3 py-2 text-left text-xs transition-colors flex items-center justify-between ${
+                                                                        isSelected
+                                                                            ? 'bg-red-50 text-red-600 font-semibold'
+                                                                            : 'text-gray-800 hover:bg-gray-50'
+                                                                    }`}
+                                                                >
+                                                                    <span className="truncate">📍 {zone.label}</span>
+                                                                    {isSelected && (
+                                                                        <span className="text-red-500 font-bold ml-2">✓</span>
+                                                                    )}
+                                                                </button>
+                                                            );
+                                                        })
+                                                    ) : (
+                                                        <div className="px-3 py-2 text-xs text-gray-500 italic">
+                                                            Using typed area: "{deliveryZone}"
+                                                        </div>
+                                                    );
+                                                })()}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <p className="mt-1 text-[11px] text-gray-500">
+                                        💡 Tap input to choose area or type your village name directly.
+                                    </p>
+                                    {errors.deliveryZone && <p className="mt-1 text-xs text-red-500 font-medium">{errors.deliveryZone}</p>}
                                 </div>
 
-                                {deliveryZone && (
-                                    <div className="animate-fade-in">
-                                        <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1.5">
-                                            Street Name & Famous Landmark *
-                                        </label>
-                                        <textarea
-                                            id="address"
-                                            value={address}
-                                            onChange={(e) => setAddress(e.target.value)}
-                                            placeholder="e.g. Door No. 12/4, Near Bus Stand, Opposite Perumal Kovil, Yellow house"
-                                            rows={3}
-                                            className={`w-full px-4 py-3 text-sm border-2 rounded-xl resize-none transition-colors ${errors.address ? 'border-red-400 bg-red-50' : 'border-gray-200'
-                                                }`}
-                                        />
-                                        {errors.address && <p className="mt-1 text-xs text-red-500">{errors.address}</p>}
-                                        <p className="mt-1 text-[11px] text-gray-500">
-                                            💡 Mention street, village, and a nearby landmark (Kovil, Bus Stop, School) so our delivery boy easily reaches your house.
-                                        </p>
-                                    </div>
-                                )}
+                                {/* Detailed Address & Landmark Field */}
+                                <div>
+                                    <label htmlFor="address" className="block text-sm font-semibold text-gray-800 mb-1.5">
+                                        Street Name & Famous Landmark *
+                                    </label>
+                                    <textarea
+                                        id="address"
+                                        value={address}
+                                        onChange={(e) => setAddress(e.target.value)}
+                                        placeholder="e.g. Door No. 12/4, Opposite Perumal Kovil, Yellow house"
+                                        rows={3}
+                                        className={`w-full px-4 py-3 text-sm border-2 rounded-xl resize-none transition-all outline-none ${
+                                            errors.address
+                                                ? 'border-red-400 bg-red-50'
+                                                : 'border-gray-200 focus:border-red-500 focus:bg-white'
+                                        }`}
+                                    />
+                                    {errors.address && <p className="mt-1 text-xs text-red-500 font-medium">{errors.address}</p>}
+                                    <p className="mt-1 text-[11px] text-gray-500">
+                                        💡 Mention street, village, and a nearby landmark (Kovil, Bus Stop, School) so our delivery boy easily reaches your house.
+                                    </p>
+                                </div>
 
+                                {/* Preferred Delivery Time Slot */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                         Preferred Delivery Time Slot

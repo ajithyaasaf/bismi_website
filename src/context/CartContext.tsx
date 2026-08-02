@@ -19,6 +19,7 @@ interface CartContextValue {
     items: CartItem[];
     itemCount: number;
     subtotal: number;
+    isHydrated: boolean;
     toastItem: { name: string } | null;
     addItem: (item: CartItem) => void;
     updateQuantity: (meatTypeId: string, qty: number) => void;
@@ -107,14 +108,20 @@ function loadCart(): CartItem[] {
 // ─── Provider ────────────────────────────────────────────
 export function CartProvider({ children }: { children: React.ReactNode }) {
     const [state, dispatch] = useReducer(cartReducer, { items: [] });
+    const [isHydrated, setIsHydrated] = React.useState(false);
     const [toastItem, setToastItem] = React.useState<{ name: string } | null>(null);
 
     useEffect(() => {
         const saved = loadCart();
         if (saved.length > 0) dispatch({ type: 'HYDRATE', payload: saved });
+        setIsHydrated(true);
     }, []);
 
-    useEffect(() => { saveCart(state.items); }, [state.items]);
+    useEffect(() => {
+        if (isHydrated) {
+            saveCart(state.items);
+        }
+    }, [state.items, isHydrated]);
 
     const showToast = useCallback((name: string) => {
         setToastItem({ name });
@@ -150,7 +157,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <CartContext.Provider
-            value={{ items: state.items, itemCount, subtotal, toastItem, addItem, updateQuantity, removeItem, clearCart }}
+            value={{ items: state.items, itemCount, subtotal, isHydrated, toastItem, addItem, updateQuantity, removeItem, clearCart }}
         >
             {children}
         </CartContext.Provider>
