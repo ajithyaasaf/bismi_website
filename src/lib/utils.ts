@@ -91,11 +91,15 @@ export function formatShortDate(timestamp: Timestamp | Date | string | number | 
 }
 
 /**
- * Build WhatsApp URL with pre-filled message.
+ * Build WhatsApp URL with pre-filled message for Order Confirmation.
  */
-export function buildWhatsAppUrl(orderId: string, customerName: string): string {
+export function buildWhatsAppUrl(orderId: string, customerName?: string, totalAmount?: number): string {
+    const formattedId = orderId.length > 8 ? orderId.slice(-8).toUpperCase() : orderId;
+    const nameText = customerName ? ` Name: ${customerName}.` : '';
+    const totalText = totalAmount ? ` Total: ₹${totalAmount.toFixed(2)}.` : '';
+
     const message = encodeURIComponent(
-        `Hi Bismi Broilers! I just placed order #${orderId}. My name is ${customerName}. Please confirm.`
+        `Hi Bismi Broilers! I placed Order #${formattedId}.${nameText}${totalText} Please confirm delivery.`
     );
     return `https://wa.me/${SHOP_CONFIG.whatsapp}?text=${message}`;
 }
