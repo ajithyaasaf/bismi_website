@@ -129,6 +129,12 @@ export default function OrderConfirmationPage() {
                                     <span className="font-semibold text-gray-900">{order.deliveryZoneLabel}</span>
                                 </div>
                             )}
+                            {order.deliveryTimeSlot && (
+                                <div className="flex justify-between">
+                                    <span className="text-gray-500">Delivery Slot</span>
+                                    <span className="font-semibold text-gray-900">{order.deliveryTimeSlot}</span>
+                                </div>
+                            )}
                             <div className="flex justify-between border-t border-gray-100 pt-2.5">
                                 <span className="font-bold text-gray-900">Total Amount</span>
                                 <span className="font-black text-red-600 text-base">{formatCurrency(order.totalAmount)}</span>

@@ -98,6 +98,9 @@ export default function CheckoutPage() {
                 const result = await getAvailableSlots(today);
                 if (!cancelled) {
                     setSlotResult(result);
+                    if (result.slots && result.slots.length > 0) {
+                        setSelectedSlot(result.slots[0]);
+                    }
                 }
             } catch (err) {
                 console.error('Failed to load delivery slots:', err);
@@ -156,6 +159,9 @@ export default function CheckoutPage() {
             }
             if (!address.trim()) {
                 newErrors.address = 'House number, street & nearby landmark details are required';
+            }
+            if (!selectedSlot) {
+                newErrors.selectedSlot = 'Please select a delivery time slot';
             }
         }
 
@@ -510,8 +516,8 @@ export default function CheckoutPage() {
                                         </div>
                                     ) : availableSlots.length === 0 ? (
                                         <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
-                                            <p className="text-xs text-amber-700">
-                                                Fastest available delivery slot will be assigned.
+                                            <p className="text-xs text-amber-700 font-medium">
+                                                No delivery slots are currently available for this date.
                                             </p>
                                         </div>
                                     ) : (
@@ -520,9 +526,7 @@ export default function CheckoutPage() {
                                                 <button
                                                     key={slot.key}
                                                     type="button"
-                                                    onClick={() => setSelectedSlot(
-                                                        selectedSlot?.key === slot.key ? null : slot
-                                                    )}
+                                                    onClick={() => setSelectedSlot(slot)}
                                                     className={`px-4 py-2.5 text-xs text-left rounded-xl border-2 transition-all ${selectedSlot?.key === slot.key
                                                         ? 'border-red-500 bg-red-50 font-semibold text-gray-900'
                                                         : 'border-gray-200 text-gray-600 hover:border-gray-300'
@@ -532,6 +536,9 @@ export default function CheckoutPage() {
                                                 </button>
                                             ))}
                                         </div>
+                                    )}
+                                    {errors.selectedSlot && (
+                                        <p className="mt-1 text-xs text-red-500 font-medium">{errors.selectedSlot}</p>
                                     )}
                                 </div>
                             </div>
