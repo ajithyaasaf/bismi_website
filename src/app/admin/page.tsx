@@ -27,17 +27,16 @@ export default function AdminDashboard() {
     const fetchStats = async () => {
         try {
             setLoading(true);
-            // Get start of today
-            const now = new Date();
-            const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-            const todayTimestamp = Timestamp.fromDate(startOfDay);
 
-            const ordersRef = collection(db, 'orders');
-            const todayQuery = query(ordersRef, where('createdAt', '>=', todayTimestamp));
-            const snapshot = await getDocs(todayQuery);
+            // Fetch all orders cleanly without strict orderBy index requirement
+            const snapshot = await getDocs(collection(db, 'orders'));
 
             const counts: DashboardStats = {
-                total: 0, pending: 0, accepted: 0, delivered: 0, cancelled: 0,
+                total: 0,
+                pending: 0,
+                accepted: 0,
+                delivered: 0,
+                cancelled: 0,
             };
 
             snapshot.docs.forEach((doc) => {
