@@ -1,22 +1,29 @@
-const CACHE_NAME = 'bismi-v1';
-const STATIC_ASSETS = [
+const CACHE_NAME = 'bismi-pwa-v2';
+
+// Core static shell assets to pre-cache on service worker installation
+const PRECACHE_ASSETS = [
     '/',
     '/menu',
-    '/logo.jpg',
+    '/track-order',
+    '/logo.png',
     '/manifest.json',
+    '/assets/images/coming-soon-box.png',
+    '/assets/images/menu-section2/raw-meat-bowl.png',
 ];
 
-// Install: pre-cache static assets
+// Install Event: Pre-cache core shell
 self.addEventListener('install', (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll(STATIC_ASSETS);
+            return cache.addAll(PRECACHE_ASSETS).catch((err) => {
+                console.warn('PWA Pre-cache partial warning:', err);
+            });
         })
     );
     self.skipWaiting();
 });
 
-// Activate: clean old caches
+// Activate Event: Cleanup stale caches
 self.addEventListener('activate', (event) => {
     event.waitUntil(
         caches.keys().then((keys) =>
@@ -30,42 +37,80 @@ self.addEventListener('activate', (event) => {
     self.clients.claim();
 });
 
-// Fetch: Network-first for API, Cache-first for static
+// Fetch Event: Cache-First for static assets, Stale-While-Revalidate for pages
 self.addEventListener('fetch', (event) => {
     const { request } = event;
 
     // Skip non-GET requests
     if (request.method !== 'GET') return;
 
-    // Skip Firebase and external API calls
+    const url = new URL(request.url);
+
+    // Skip Firebase Firestore, Google Analytics, and auth backend APIs
     if (
-        request.url.includes('firestore.googleapis.com') ||
-        request.url.includes('identitytoolkit.googleapis.com') ||
-        request.url.includes('securetoken.googleapis.com')
+        url.hostname.includes('firestore.googleapis.com') ||
+        url.hostname.includes('identitytoolkit.googleapis.com') ||
+        url.hostname.includes('securetoken.googleapis.com') ||
+        url.hostname.includes('google-analytics.com') ||
+        url.hostname.includes('googletagmanager.com')
     ) {
         return;
     }
 
+    // Static Media & Assets (Images, Fonts, CSS, JS) -> CACHE FIRST with Background Refresh
+    const isStaticAsset =
+        request.destination === 'image' ||
+        request.destination === 'font' ||
+        request.destination === 'style' ||
+        request.destination === 'script' ||
+        url.pathname.startsWith('/assets/') ||
+        url.pathname.startsWith('/_next/static/') ||
+        url.pathname.endsWith('.png') ||
+        url.pathname.endsWith('.jpg') ||
+        url.pathname.endsWith('.jpeg') ||
+        url.pathname.endsWith('.webp') ||
+        url.pathname.endsWith('.avif') ||
+        url.pathname.endsWith('.svg');
+
+    if (isStaticAsset) {
+        event.respondWith(
+            caches.match(request).then((cachedResponse) => {
+                const fetchPromise = fetch(request)
+                    .then((networkResponse) => {
+                        if (networkResponse && networkResponse.status === 200) {
+                            const responseClone = networkResponse.clone();
+                            caches.open(CACHE_NAME).then((cache) => {
+                                cache.put(request, responseClone);
+                            });
+                        }
+                        return networkResponse;
+                    })
+                    .catch(() => cachedResponse);
+
+                return cachedResponse || fetchPromise;
+            })
+        );
+        return;
+    }
+
+    // Page HTML Navigation Requests -> STALE-WHILE-REVALIDATE for fast 3G rendering
     event.respondWith(
-        caches.match(request).then((cached) => {
-            const fetched = fetch(request)
-                .then((response) => {
-                    // Cache successful responses
-                    if (response.ok) {
-                        const clone = response.clone();
+        caches.match(request).then((cachedResponse) => {
+            const fetchPromise = fetch(request)
+                .then((networkResponse) => {
+                    if (networkResponse && networkResponse.status === 200) {
+                        const responseClone = networkResponse.clone();
                         caches.open(CACHE_NAME).then((cache) => {
-                            cache.put(request, clone);
+                            cache.put(request, responseClone);
                         });
                     }
-                    return response;
+                    return networkResponse;
                 })
                 .catch(() => {
-                    // Return cached version on network failure
-                    return cached;
+                    return cachedResponse;
                 });
 
-            // Return cached immediately, update in background (stale-while-revalidate)
-            return cached || fetched;
+            return cachedResponse || fetchPromise;
         })
     );
 });

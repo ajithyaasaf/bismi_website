@@ -139,6 +139,10 @@ export default function OrderDetailPage() {
                         <span className="text-gray-400">Delivery Type</span>
                         <p className="font-medium text-gray-900 capitalize">{order.deliveryType}</p>
                     </div>
+                    <div>
+                        <span className="text-gray-400">Payment Method</span>
+                        <p className="font-semibold text-emerald-700">{order.paymentMethod || 'Cash on Delivery (COD)'}</p>
+                    </div>
                     {order.address && (
                         <div>
                             <span className="text-gray-400">Address</span>

@@ -32,34 +32,62 @@ export function validateQuantity(kg: number): boolean {
 }
 
 /**
- * Format Firestore Timestamp to readable date string.
+ * Format Firestore Timestamp or Date/ISO string to readable date string.
  */
-export function formatDate(timestamp: Timestamp | null | undefined): string {
+export function formatDate(timestamp: Timestamp | Date | string | number | null | undefined): string {
     if (!timestamp) return '—';
-    const date = timestamp.toDate();
-    return date.toLocaleDateString('en-IN', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-    });
+    try {
+        let date: Date;
+        if (typeof (timestamp as Timestamp)?.toDate === 'function') {
+            date = (timestamp as Timestamp).toDate();
+        } else if (timestamp instanceof Date) {
+            date = timestamp;
+        } else {
+            date = new Date(timestamp as string);
+        }
+
+        if (isNaN(date.getTime())) return '—';
+
+        return date.toLocaleDateString('en-IN', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+        });
+    } catch {
+        return '—';
+    }
 }
 
 /**
  * Format short date (for admin list).
  */
-export function formatShortDate(timestamp: Timestamp | null | undefined): string {
+export function formatShortDate(timestamp: Timestamp | Date | string | number | null | undefined): string {
     if (!timestamp) return '—';
-    const date = timestamp.toDate();
-    return date.toLocaleDateString('en-IN', {
-        day: '2-digit',
-        month: 'short',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-    });
+    try {
+        let date: Date;
+        if (typeof (timestamp as Timestamp)?.toDate === 'function') {
+            date = (timestamp as Timestamp).toDate();
+        } else if (timestamp instanceof Date) {
+            date = timestamp;
+        } else {
+            date = new Date(timestamp as string);
+        }
+
+        if (isNaN(date.getTime())) return '—';
+
+        return date.toLocaleDateString('en-IN', {
+            day: '2-digit',
+            month: 'short',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: true,
+        });
+    } catch {
+        return '—';
+    }
 }
 
 /**
@@ -129,7 +157,7 @@ export function buildWhatsAppOrderUrl(order: Order): string {
     const trackingUrl = `${baseUrl}/track-order?mobile=${order.mobile}`;
 
     const message = encodeURIComponent(
-        `Hi ${order.customerName || 'there'},\n\nYour order from ${SHOP_CONFIG.name} is confirmed!\n\nOrder Details:\n${itemLines}\n\nDelivery: ${deliveryLabel}\nTotal: ₹${order.totalAmount.toFixed(2)}\n\nWe will prepare your order shortly.\n\nTrack your order here:\n${trackingUrl}`
+        `Hi ${order.customerName || 'there'},\n\nYour order from ${SHOP_CONFIG.name} is confirmed!\n\nOrder Details:\n${itemLines}\n\nDelivery: ${deliveryLabel}\nPayment: ${order.paymentMethod || 'Cash on Delivery'}\nTotal: ₹${order.totalAmount.toFixed(2)}\n\nWe will prepare your order shortly.\n\nTrack your order here:\n${trackingUrl}`
     );
     return `https://wa.me/91${order.mobile}?text=${message}`;
 }

@@ -1,16 +1,15 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
-import Link from 'next/link';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useCart } from '@/context/CartContext';
 import ImageWithSkeleton from '@/components/ImageWithSkeleton';
 import { DeliveryType, OrderStatus } from '@/types';
 import { formatCurrency, validateMobile, generateIdempotencyToken, computeDeliveryCharge } from '@/lib/utils';
-import { SHOP_CONFIG, DELIVERY_ZONES, DELIVERY_RADIUS_KM } from '@/lib/config';
+import { SHOP_CONFIG, DELIVERY_ZONES } from '@/lib/config';
+import { savePendingOfflineOrder } from '@/lib/offlineQueue';
 import {
     getAvailableSlots,
     getTodayDateString,
@@ -21,6 +20,10 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { trackEvent } from '@/lib/analytics';
 
+export type PaymentMethod = 'COD' | 'UPI';
+
+const SAVED_CUSTOMER_KEY = 'bismi_saved_customer';
+
 export default function CheckoutPage() {
     const router = useRouter();
     const { items, subtotal, clearCart } = useCart();
@@ -28,29 +31,43 @@ export default function CheckoutPage() {
     const [name, setName] = useState('');
     const [mobile, setMobile] = useState('');
     const [deliveryType, setDeliveryType] = useState<DeliveryType>(DeliveryType.DELIVERY);
+    const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('COD');
     const [selectedSlot, setSelectedSlot] = useState<AvailableSlot | null>(null);
     const [deliveryZone, setDeliveryZone] = useState('');
     const [address, setAddress] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [submitError, setSubmitError] = useState('');
+    const [copiedUpi, setCopiedUpi] = useState(false);
+    const [isAutofilled, setIsAutofilled] = useState(false);
     const [idempotencyToken, setIdempotencyToken] = useState(() => generateIdempotencyToken());
 
     // ─── Slot Availability State ──────────────────────────
     const [slotResult, setSlotResult] = useState<SlotAvailabilityResult | null>(null);
     const [slotsLoading, setSlotsLoading] = useState(true);
 
-    // ─── Returning Customer Autofill ─────────────────────
-    const [autofillLoading, setAutofillLoading] = useState(false);
-    const lastLookedUpMobile = useRef('');
-
-    const lookupReturningCustomer = useCallback(async (mobileNumber: string) => {
-        // Disabled: Anonymous users do not have permissions to list orders
-        // to prevent data scraping.
-    }, []);
-
     const deliveryCharge = deliveryType === DeliveryType.DELIVERY ? computeDeliveryCharge(subtotal) : 0;
     const total = subtotal + deliveryCharge;
+
+    // UPI Intent Deep Link URL
+    const upiIntentUrl = `upi://pay?pa=${SHOP_CONFIG.upiId}&pn=${encodeURIComponent(SHOP_CONFIG.name)}&am=${total.toFixed(2)}&cu=INR&tn=${encodeURIComponent('Meat Order Payment')}`;
+
+    // ─── Load Saved Customer Details on Mount ─────────────
+    useEffect(() => {
+        try {
+            const savedRaw = localStorage.getItem(SAVED_CUSTOMER_KEY);
+            if (savedRaw) {
+                const saved = JSON.parse(savedRaw);
+                if (saved.name) setName(saved.name);
+                if (saved.mobile) setMobile(saved.mobile);
+                if (saved.deliveryZone) setDeliveryZone(saved.deliveryZone);
+                if (saved.address) setAddress(saved.address);
+                setIsAutofilled(true);
+            }
+        } catch (err) {
+            console.warn('Failed to load saved customer details:', err);
+        }
+    }, []);
 
     // ─── Fetch Available Slots ────────────────────────────
     useEffect(() => {
@@ -66,7 +83,6 @@ export default function CheckoutPage() {
                 }
             } catch (err) {
                 console.error('Failed to load delivery slots:', err);
-                // Failsafe: slotResult stays null → handled in render
             } finally {
                 if (!cancelled) setSlotsLoading(false);
             }
@@ -88,6 +104,25 @@ export default function CheckoutPage() {
         }
     }, [items.length, submitting, router]);
 
+    const handleCopyUpi = () => {
+        navigator.clipboard.writeText(SHOP_CONFIG.upiId);
+        setCopiedUpi(true);
+        setTimeout(() => setCopiedUpi(false), 3000);
+    };
+
+    const handleClearSavedAddress = () => {
+        setName('');
+        setMobile('');
+        setDeliveryZone('');
+        setAddress('');
+        setIsAutofilled(false);
+        try {
+            localStorage.removeItem(SAVED_CUSTOMER_KEY);
+        } catch (err) {
+            console.warn('Failed to remove saved customer key:', err);
+        }
+    };
+
     const validate = (): boolean => {
         const newErrors: Record<string, string> = {};
 
@@ -99,10 +134,10 @@ export default function CheckoutPage() {
 
         if (deliveryType === DeliveryType.DELIVERY) {
             if (!deliveryZone) {
-                newErrors.deliveryZone = 'Please select your delivery area';
+                newErrors.deliveryZone = 'Please select your delivery area or village';
             }
             if (!address.trim()) {
-                newErrors.address = 'House number & street details are required';
+                newErrors.address = 'House number, street & nearby landmark details are required';
             }
         }
 
@@ -114,6 +149,20 @@ export default function CheckoutPage() {
         return Object.keys(newErrors).length === 0;
     };
 
+    const saveCustomerInfoLocally = () => {
+        try {
+            const info = {
+                name: name.trim(),
+                mobile: mobile.trim(),
+                deliveryZone,
+                address: address.trim(),
+            };
+            localStorage.setItem(SAVED_CUSTOMER_KEY, JSON.stringify(info));
+        } catch (err) {
+            console.warn('Failed to save customer details locally:', err);
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate() || submitting) return;
@@ -121,81 +170,84 @@ export default function CheckoutPage() {
         setSubmitting(true);
         setSubmitError('');
 
-        try {
-            // Build order items with locked prices
-            const orderItems = items.map((item) => {
-                if (item.unit === 'piece') {
-                    return {
-                        meatTypeId: item.meatTypeId,
-                        meatName: item.meatName,
-                        unit: item.unit,
-                        pieces: item.pieces,
-                        pricePerPiece: item.pricePerPiece,
-                        cuttingPreference: item.cuttingPreference,
-                        subtotal: Number(((item.pieces ?? 0) * (item.pricePerPiece ?? 0)).toFixed(2)),
-                    };
-                }
+        // Persist customer address for future 1-click checkout
+        saveCustomerInfoLocally();
+
+        // Build order items with locked prices
+        const orderItems = items.map((item) => {
+            if (item.unit === 'piece') {
                 return {
                     meatTypeId: item.meatTypeId,
                     meatName: item.meatName,
                     unit: item.unit,
-                    kg: item.kg,
-                    pricePerKg: item.pricePerKg,
-                    subtotal: Number(((item.kg ?? 0) * (item.pricePerKg ?? 0)).toFixed(2)),
+                    pieces: item.pieces,
+                    pricePerPiece: item.pricePerPiece,
+                    cuttingPreference: item.cuttingPreference,
+                    subtotal: Number(((item.pieces ?? 0) * (item.pricePerPiece ?? 0)).toFixed(2)),
                 };
-            });
-
-            // Build order document
-            const orderData: Record<string, unknown> = {
-                customerName: name.trim(),
-                mobile: mobile.trim(),
-                items: orderItems,
-                subtotal: Number(subtotal.toFixed(2)),
-                deliveryCharge: Number(deliveryCharge.toFixed(2)),
-                totalAmount: Number(total.toFixed(2)),
-                deliveryType,
-                address: deliveryType === DeliveryType.DELIVERY ? address.trim() : '',
-                deliveryZone: deliveryType === DeliveryType.DELIVERY ? deliveryZone : '',
-                deliveryZoneLabel: deliveryType === DeliveryType.DELIVERY
-                    ? (DELIVERY_ZONES.find(z => z.key === deliveryZone)?.label ?? '')
-                    : '',
-                status: OrderStatus.PENDING,
-                idempotencyToken,
-                createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp(),
+            }
+            return {
+                meatTypeId: item.meatTypeId,
+                meatName: item.meatName,
+                unit: item.unit,
+                kg: item.kg,
+                pricePerKg: item.pricePerKg,
+                subtotal: Number(((item.kg ?? 0) * (item.pricePerKg ?? 0)).toFixed(2)),
             };
+        });
 
-            // Include slot data if delivery + slot selected
-            if (deliveryType === DeliveryType.DELIVERY && selectedSlot) {
-                orderData.deliveryTimeSlot = selectedSlot.label;    // Backward compat label
-                orderData.deliverySlot = selectedSlot.key;          // New: slot key for counting
-                orderData.deliveryDate = slotResult?.date ?? getTodayDateString(); // New: date for counting
+        // Build order payload
+        const orderData: Record<string, unknown> = {
+            customerName: name.trim(),
+            mobile: mobile.trim(),
+            items: orderItems,
+            subtotal: Number(subtotal.toFixed(2)),
+            deliveryCharge: Number(deliveryCharge.toFixed(2)),
+            totalAmount: Number(total.toFixed(2)),
+            deliveryType,
+            paymentMethod,
+            address: deliveryType === DeliveryType.DELIVERY ? address.trim() : '',
+            deliveryZone: deliveryType === DeliveryType.DELIVERY ? deliveryZone : '',
+            deliveryZoneLabel: deliveryType === DeliveryType.DELIVERY
+                ? (DELIVERY_ZONES.find(z => z.key === deliveryZone)?.label ?? '')
+                : '',
+            status: OrderStatus.PENDING,
+            idempotencyToken,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+        };
+
+        if (deliveryType === DeliveryType.DELIVERY && selectedSlot) {
+            orderData.deliveryTimeSlot = selectedSlot.label;
+            orderData.deliverySlot = selectedSlot.key;
+            orderData.deliveryDate = slotResult?.date ?? getTodayDateString();
+        }
+
+        try {
+            if (navigator.onLine) {
+                const orderRef = await addDoc(collection(db, 'orders'), orderData);
+                setIdempotencyToken(generateIdempotencyToken());
+                clearCart();
+                router.replace(`/order-confirmation/${orderRef.id}`);
+                return;
             }
-
-            let orderRef;
-            try {
-                orderRef = await addDoc(collection(db, 'orders'), orderData);
-            } catch (err) {
-                console.error('addDoc failed:', err);
-                throw new Error('Write Error (addDoc): ' + (err as Error).message);
-            }
-
-            // Rotate the token BEFORE clearing cart to prevent the empty-cart
-            // redirect from firing before navigation completes.
+            
+            // Offline queue fallback
+            const offlineId = savePendingOfflineOrder(orderData);
             setIdempotencyToken(generateIdempotencyToken());
             clearCart();
-            router.replace(`/order-confirmation/${orderRef.id}`);
+            router.replace(`/order-confirmation/${offlineId}`);
         } catch (err) {
-            console.error('Order submission failed:', err);
-            setSubmitError(err instanceof Error ? err.message : 'Something went wrong. Please check your connection and try again.');
-            setSubmitting(false);
+            console.warn('Network write dropped, stashing offline queue:', err);
+            const offlineId = savePendingOfflineOrder(orderData);
+            setIdempotencyToken(generateIdempotencyToken());
+            clearCart();
+            router.replace(`/order-confirmation/${offlineId}`);
         }
     };
 
-    // Don't render the form if cart is empty and we are not in the middle of submitting
     if (items.length === 0 && !submitting) return null;
 
-    // Derive display data for slot section
     const availableSlots = slotResult?.slots ?? [];
     const isShowingTomorrow = slotResult ? !slotResult.isToday : false;
     const slotDateLabel = isShowingTomorrow ? 'Tomorrow' : 'Today';
@@ -207,18 +259,38 @@ export default function CheckoutPage() {
                 <h1 className="text-2xl font-bold text-gray-900 mb-6">Checkout</h1>
 
                 <form onSubmit={handleSubmit} noValidate>
-                    {/* Customer Details */}
-                    <div className="bg-white rounded-xl border border-gray-100 p-5 mb-4">
-                        <h2 className="text-sm font-bold text-gray-900 mb-4">Your Details</h2>
+                    
+                    {/* Customer Contact Details */}
+                    <div className="bg-white rounded-2xl border border-gray-100 p-5 mb-4 shadow-xs">
+                        <div className="flex items-center justify-between mb-3">
+                            <h2 className="text-sm font-bold text-gray-900">Your Contact Details</h2>
+                        </div>
+
+                        {/* Saved Address Badge */}
+                        {isAutofilled && (
+                            <div className="mb-4 px-3.5 py-2 bg-emerald-50 border border-emerald-200/80 rounded-xl flex items-center justify-between text-xs text-emerald-900">
+                                <span className="flex items-center gap-1.5 font-medium">
+                                    <span className="text-sm">✨</span>
+                                    Auto-filled from your previous order
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={handleClearSavedAddress}
+                                    className="text-emerald-700 hover:text-emerald-900 underline text-[11px] font-semibold"
+                                >
+                                    Clear Form
+                                </button>
+                            </div>
+                        )}
 
                         <div className="space-y-4">
-                            {/* Mobile — placed first for autofill flow */}
+                            {/* Mobile Number */}
                             <div>
                                 <label htmlFor="mobile" className="block text-sm font-medium text-gray-700 mb-1.5">
-                                    Mobile Number *
+                                    WhatsApp / Mobile Number *
                                 </label>
                                 <div className="relative">
-                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-gray-400">+91</span>
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-semibold">+91</span>
                                     <input
                                         id="mobile"
                                         type="tel"
@@ -226,16 +298,10 @@ export default function CheckoutPage() {
                                         maxLength={10}
                                         value={mobile}
                                         onChange={(e) => setMobile(e.target.value.replace(/\D/g, ''))}
-                                        onBlur={() => lookupReturningCustomer(mobile.trim())}
                                         placeholder="9876543210"
-                                        className={`w-full pl-12 pr-10 py-3 text-sm border-2 rounded-xl transition-colors ${errors.mobile ? 'border-red-400 bg-red-50' : 'border-gray-200'
+                                        className={`w-full pl-12 pr-4 py-3 text-sm border-2 rounded-xl transition-colors ${errors.mobile ? 'border-red-400 bg-red-50' : 'border-gray-200'
                                             }`}
                                     />
-                                    {autofillLoading && (
-                                        <span className="absolute right-3 top-1/2 -translate-y-1/2">
-                                            <span className="block w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-                                        </span>
-                                    )}
                                 </div>
                                 {errors.mobile && <p className="mt-1 text-xs text-red-500">{errors.mobile}</p>}
                             </div>
@@ -259,9 +325,9 @@ export default function CheckoutPage() {
                         </div>
                     </div>
 
-                    {/* Delivery Type */}
-                    <div className="bg-white rounded-xl border border-gray-100 p-5 mb-4">
-                        <h2 className="text-sm font-bold text-gray-900 mb-4">Delivery Method</h2>
+                    {/* Delivery Option */}
+                    <div className="bg-white rounded-2xl border border-gray-100 p-5 mb-4 shadow-xs">
+                        <h2 className="text-sm font-bold text-gray-900 mb-4">Delivery Option</h2>
 
                         <div className="grid grid-cols-2 gap-3 mb-4">
                             <button
@@ -273,8 +339,8 @@ export default function CheckoutPage() {
                                     }`}
                             >
                                 <div className="text-2xl mb-1">🛵</div>
-                                <div className="text-sm font-semibold text-gray-900">Delivery</div>
-                                <div className="text-xs text-gray-500 mt-0.5">
+                                <div className="text-sm font-semibold text-gray-900">Home Delivery</div>
+                                <div className="text-xs text-emerald-600 font-bold mt-0.5">
                                     {deliveryCharge === 0 ? 'FREE' : `${formatCurrency(deliveryCharge)} charge`}
                                 </div>
                             </button>
@@ -287,31 +353,27 @@ export default function CheckoutPage() {
                                     }`}
                             >
                                 <div className="text-2xl mb-1">🏪</div>
-                                <div className="text-sm font-semibold text-gray-900">Pickup</div>
-                                <div className="text-xs text-gray-500 mt-0.5">From our shop</div>
+                                <div className="text-sm font-semibold text-gray-900">Shop Pickup</div>
+                                <div className="text-xs text-gray-500 mt-0.5">Mudukulathur</div>
                             </button>
                         </div>
 
-                        {/* Address + Time Slot (only for delivery) */}
+                        {/* Rural Landmark-Based Address */}
                         {deliveryType === DeliveryType.DELIVERY && (
-                            <div className="space-y-4">
-                                {/* Step 1: Select Delivery Zone */}
+                            <div className="space-y-4 pt-2">
                                 <div>
                                     <label htmlFor="deliveryZone" className="block text-sm font-medium text-gray-700 mb-1.5">
-                                        Delivery Area *
+                                        Village / Delivery Area *
                                     </label>
-                                    <p className="text-xs text-gray-400 mb-2">
-                                        We deliver within {DELIVERY_RADIUS_KM} km of Mudukulathur
-                                    </p>
                                     <select
                                         id="deliveryZone"
                                         value={deliveryZone}
                                         onChange={(e) => setDeliveryZone(e.target.value)}
-                                        className={`w-full px-4 py-3 text-sm border-2 rounded-xl transition-colors appearance-none bg-white cursor-pointer ${
+                                        className={`w-full px-4 py-3 text-sm border-2 rounded-xl transition-colors bg-white cursor-pointer ${
                                             errors.deliveryZone ? 'border-red-400 bg-red-50' : 'border-gray-200'
                                         }`}
                                     >
-                                        <option value="">— Select your area —</option>
+                                        <option value="">— Select your area or village —</option>
                                         {DELIVERY_ZONES.map((zone) => (
                                             <option key={zone.key} value={zone.key}>
                                                 {zone.label}
@@ -319,46 +381,32 @@ export default function CheckoutPage() {
                                         ))}
                                     </select>
                                     {errors.deliveryZone && <p className="mt-1 text-xs text-red-500">{errors.deliveryZone}</p>}
-
-                                    {/* Warning for "Other" zone */}
-                                    {deliveryZone === 'other' && (
-                                        <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2">
-                                            <span className="text-base leading-none">⚠️</span>
-                                            <p className="text-xs text-amber-700">
-                                                Delivery is strictly within {DELIVERY_RADIUS_KM} km of Mudukulathur town.
-                                                Orders outside this radius will be cancelled.
-                                                Please mention your area clearly below.
-                                            </p>
-                                        </div>
-                                    )}
                                 </div>
 
-                                {/* Step 2: Detailed House Address (only after zone is selected) */}
                                 {deliveryZone && (
                                     <div className="animate-fade-in">
                                         <label htmlFor="address" className="block text-sm font-medium text-gray-700 mb-1.5">
-                                            House No. & Street Details *
+                                            Street Name & Famous Landmark *
                                         </label>
                                         <textarea
                                             id="address"
                                             value={address}
                                             onChange={(e) => setAddress(e.target.value)}
-                                            placeholder="e.g. Door No. 12/4, 2nd Cross Street, Near Post Office, Yellow color house"
+                                            placeholder="e.g. Door No. 12/4, Near Bus Stand, Opposite Perumal Kovil, Yellow house"
                                             rows={3}
                                             className={`w-full px-4 py-3 text-sm border-2 rounded-xl resize-none transition-colors ${errors.address ? 'border-red-400 bg-red-50' : 'border-gray-200'
                                                 }`}
                                         />
                                         {errors.address && <p className="mt-1 text-xs text-red-500">{errors.address}</p>}
-                                        <p className="mt-1 text-xs text-gray-400">
-                                            Include house number, street name, and a nearby landmark so our delivery boy can find you easily.
+                                        <p className="mt-1 text-[11px] text-gray-500">
+                                            💡 Mention street, village, and a nearby landmark (Kovil, Bus Stop, School) so our delivery boy easily reaches your house.
                                         </p>
                                     </div>
                                 )}
 
-                                {/* Delivery Time Slot — Dynamic */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Preferred Delivery Time
+                                        Preferred Delivery Time Slot
                                         {isShowingTomorrow && (
                                             <span className="ml-2 px-2 py-0.5 text-[10px] font-bold bg-blue-100 text-blue-700 rounded-full uppercase">
                                                 {slotDateLabel}
@@ -366,28 +414,19 @@ export default function CheckoutPage() {
                                         )}
                                     </label>
 
-                                    {slotResult?.shopClosedToday && (
-                                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 mb-3 flex items-start gap-2">
-                                            <span className="text-base leading-none">ℹ️</span>
-                                            <p className="text-sm text-blue-800">
-                                                Today we are closed. You can place your order for tomorrow.
-                                            </p>
-                                        </div>
-                                    )}
-
                                     {slotsLoading ? (
                                         <div className="flex items-center gap-2 py-3">
                                             <span className="w-4 h-4 border-2 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
-                                            <span className="text-sm text-gray-500">Loading available slots…</span>
+                                            <span className="text-xs text-gray-500">Checking delivery slots…</span>
                                         </div>
                                     ) : availableSlots.length === 0 ? (
                                         <div className="bg-amber-50 border border-amber-200 rounded-xl p-3">
-                                            <p className="text-sm text-amber-700">
-                                                No delivery slots available right now. You can still place your order and we&apos;ll contact you to arrange delivery.
+                                            <p className="text-xs text-amber-700">
+                                                Fastest available delivery slot will be assigned.
                                             </p>
                                         </div>
                                     ) : (
-                                        <div className="grid grid-cols-1 gap-2">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                             {availableSlots.map((slot) => (
                                                 <button
                                                     key={slot.key}
@@ -395,7 +434,7 @@ export default function CheckoutPage() {
                                                     onClick={() => setSelectedSlot(
                                                         selectedSlot?.key === slot.key ? null : slot
                                                     )}
-                                                    className={`px-4 py-2.5 text-sm text-left rounded-xl border-2 transition-all ${selectedSlot?.key === slot.key
+                                                    className={`px-4 py-2.5 text-xs text-left rounded-xl border-2 transition-all ${selectedSlot?.key === slot.key
                                                         ? 'border-red-500 bg-red-50 font-semibold text-gray-900'
                                                         : 'border-gray-200 text-gray-600 hover:border-gray-300'
                                                         }`}
@@ -405,32 +444,89 @@ export default function CheckoutPage() {
                                             ))}
                                         </div>
                                     )}
-                                    <p className="mt-1.5 text-xs text-gray-400">Optional — we&apos;ll confirm the exact time with you</p>
                                 </div>
                             </div>
                         )}
                     </div>
 
-                    {/* Order Summary */}
-                    <div className="bg-white rounded-xl border border-gray-100 p-5 mb-6 shadow-sm">
-                        <div className="flex items-center justify-between mb-4">
-                            <h2 className="text-sm font-bold text-gray-900">Order Summary</h2>
+                    {/* Payment Method Option */}
+                    <div className="bg-white rounded-2xl border border-gray-100 p-5 mb-4 shadow-xs">
+                        <h2 className="text-sm font-bold text-gray-900 mb-3">Select Payment Method</h2>
+
+                        <div className="grid grid-cols-2 gap-3 mb-3">
+                            <button
+                                type="button"
+                                onClick={() => setPaymentMethod('COD')}
+                                className={`p-3.5 rounded-xl border-2 text-left transition-all ${paymentMethod === 'COD'
+                                    ? 'border-red-500 bg-red-50/80'
+                                    : 'border-gray-200 hover:border-gray-300'
+                                    }`}
+                            >
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-xl">💵</span>
+                                    <span className="text-xs font-bold text-gray-900">Cash on Delivery</span>
+                                </div>
+                                <p className="text-[11px] text-gray-500">Pay cash upon delivery</p>
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => setPaymentMethod('UPI')}
+                                className={`p-3.5 rounded-xl border-2 text-left transition-all ${paymentMethod === 'UPI'
+                                    ? 'border-red-500 bg-red-50/80'
+                                    : 'border-gray-200 hover:border-gray-300'
+                                    }`}
+                            >
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-xl">📲</span>
+                                    <span className="text-xs font-bold text-gray-900">Pay via UPI</span>
+                                </div>
+                                <p className="text-[11px] text-emerald-600 font-semibold">GPay / PhonePe / Paytm</p>
+                            </button>
                         </div>
 
-                        <div className="space-y-4 text-sm mb-5">
+                        {paymentMethod === 'UPI' && (
+                            <div className="p-4 bg-emerald-50/80 border border-emerald-200 rounded-xl space-y-3 animate-fade-in">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs font-bold text-emerald-900">Shop UPI ID:</span>
+                                    <code className="text-xs font-mono font-bold bg-white px-2.5 py-1 rounded-md text-emerald-700 border border-emerald-200">
+                                        {SHOP_CONFIG.upiId}
+                                    </code>
+                                </div>
+
+                                <a
+                                    href={upiIntentUrl}
+                                    className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-xs transition-all"
+                                >
+                                    <span>⚡ Open UPI App & Pay {formatCurrency(total)}</span>
+                                </a>
+
+                                <button
+                                    type="button"
+                                    onClick={handleCopyUpi}
+                                    className="w-full text-center text-[11px] text-emerald-700 hover:underline font-semibold"
+                                >
+                                    {copiedUpi ? '✓ UPI ID Copied!' : 'Copy UPI ID to clipboard'}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Order Summary */}
+                    <div className="bg-white rounded-2xl border border-gray-100 p-5 mb-6 shadow-xs">
+                        <h2 className="text-sm font-bold text-gray-900 mb-4">Order Summary</h2>
+
+                        <div className="space-y-3.5 text-sm mb-4">
                             {items.map((item) => {
                                 const isPerPiece = item.unit === 'piece';
-                                const qtyLabel = isPerPiece
-                                    ? `${item.pieces} pcs`
-                                    : `${item.kg}kg`;
+                                const qtyLabel = isPerPiece ? `${item.pieces} pcs` : `${item.kg}kg`;
                                 const lineTotal = isPerPiece
                                     ? (item.pieces ?? 0) * (item.pricePerPiece ?? 0)
                                     : (item.kg ?? 0) * (item.pricePerKg ?? 0);
 
                                 return (
                                     <div key={item.meatTypeId} className="flex items-center gap-3">
-                                        {/* Thumbnail */}
-                                        {item.imageURL ? (
+                                        {item.imageURL && (
                                             <ImageWithSkeleton
                                                 src={item.imageURL}
                                                 alt={item.meatName}
@@ -439,42 +535,26 @@ export default function CheckoutPage() {
                                                 containerClassName="w-12 h-12 shrink-0 rounded-lg border border-gray-200"
                                                 imageClassName="object-cover"
                                             />
-                                        ) : (
-                                            <div className="relative w-12 h-12 shrink-0 bg-gray-100 rounded-lg overflow-hidden border border-gray-200">
-                                                <div className="w-full h-full flex items-center justify-center text-gray-300 text-xs">
-                                                    No Img
-                                                </div>
-                                            </div>
                                         )}
-                                        {/* Details */}
                                         <div className="flex-1 min-w-0">
                                             <p className="text-gray-900 font-medium truncate">{item.meatName}</p>
-                                            <p className="text-xs text-gray-500 mt-0.5">
-                                                Qty: <span className="font-semibold">{qtyLabel}</span>
-                                            </p>
+                                            <p className="text-xs text-gray-500">Qty: <span className="font-semibold">{qtyLabel}</span></p>
                                         </div>
-                                        {/* Price */}
-                                        <div className="shrink-0 font-bold text-gray-900">
-                                            {formatCurrency(lineTotal)}
-                                        </div>
+                                        <div className="shrink-0 font-bold text-gray-900">{formatCurrency(lineTotal)}</div>
                                     </div>
                                 );
                             })}
                         </div>
 
-                        <div className="border-t border-gray-100 pt-4 space-y-3 text-sm">
+                        <div className="border-t border-gray-100 pt-3 space-y-2 text-sm">
                             <div className="flex justify-between text-gray-600">
                                 <span>Subtotal</span>
                                 <span className="font-medium text-gray-900">{formatCurrency(subtotal)}</span>
                             </div>
                             <div className="flex justify-between text-gray-600">
                                 <span>Delivery</span>
-                                <span className="font-medium text-gray-900">
-                                    {deliveryType === DeliveryType.PICKUP
-                                        ? '—'
-                                        : deliveryCharge === 0
-                                            ? 'FREE'
-                                            : formatCurrency(deliveryCharge)}
+                                <span className="font-medium text-emerald-600 font-bold">
+                                    {deliveryCharge === 0 ? 'FREE' : formatCurrency(deliveryCharge)}
                                 </span>
                             </div>
                             <div className="border-t border-gray-200 pt-3 flex justify-between items-center">
@@ -484,39 +564,13 @@ export default function CheckoutPage() {
                         </div>
                     </div>
 
-                    {/* Payment Info */}
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4 flex items-start gap-3">
-                        <span className="text-xl">💰</span>
-                        <div>
-                            <p className="text-sm font-semibold text-yellow-800">Cash on Delivery</p>
-                            <p className="text-xs text-yellow-700">
-                                Pay {formatCurrency(total)} when you receive your order.
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Confirmation Microcopy */}
-                    <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6 flex items-start gap-3">
-                        <span className="text-lg">📞</span>
-                        <p className="text-xs text-blue-700 leading-relaxed">
-                            We will call or WhatsApp you shortly to confirm your preferred delivery time.
-                        </p>
-                    </div>
-
-                    {/* Submit Error */}
-                    {submitError && (
-                        <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-4 text-center">
-                            <p className="text-sm text-red-700">{submitError}</p>
-                        </div>
-                    )}
-
                     {/* Submit Button */}
                     <button
                         type="submit"
                         disabled={submitting}
-                        className={`w-full py-4 font-bold text-white rounded-xl transition-all ${submitting
+                        className={`w-full py-4 font-bold text-white text-base rounded-2xl transition-all ${submitting
                             ? 'bg-gray-400 cursor-not-allowed'
-                            : 'bg-red-600 hover:bg-red-700 active:scale-[0.98] shadow-lg shadow-red-200'
+                            : 'bg-red-600 hover:bg-red-700 active:scale-[0.98] shadow-lg shadow-red-500/20'
                             }`}
                     >
                         {submitting ? (

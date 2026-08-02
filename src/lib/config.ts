@@ -21,6 +21,9 @@ export const SHOP_CONFIG = {
     // Currency
     currency: '₹',
     currencyCode: 'INR',
+
+    // UPI Payment
+    upiId: '8681087082@paytm',
 } as const;
 
 /**

@@ -1,7 +1,7 @@
 'use client';
 
 import { Suspense, useState, useEffect } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Order, OrderStatus } from '@/types';
@@ -19,9 +19,46 @@ const STATUS_TIMELINE = [
     OrderStatus.DELIVERED
 ];
 
+function findOfflinePendingOrder(cleanMobile: string): Order | null {
+    if (typeof window === 'undefined') return null;
+    try {
+        const raw = localStorage.getItem('bismi_pending_offline_orders');
+        if (!raw) return null;
+        const list = JSON.parse(raw);
+        if (!Array.isArray(list)) return null;
+
+        const match = list.find((item) => {
+            const m = item?.orderData?.mobile;
+            return typeof m === 'string' && m.replace(/\D/g, '') === cleanMobile;
+        });
+
+        if (match?.orderData) {
+            const data = match.orderData;
+            return {
+                id: data.id || data.offlineId || 'OFFLINE-PENDING',
+                customerName: data.customerName || 'Customer',
+                mobile: data.mobile || cleanMobile,
+                items: data.items || [],
+                subtotal: data.subtotal || 0,
+                deliveryCharge: data.deliveryCharge || 0,
+                totalAmount: data.totalAmount || 0,
+                deliveryType: data.deliveryType || 'delivery',
+                paymentMethod: data.paymentMethod || 'COD',
+                address: data.address || '',
+                deliveryZone: data.deliveryZone || '',
+                deliveryZoneLabel: data.deliveryZoneLabel || '',
+                status: OrderStatus.PENDING,
+                createdAt: data.createdAtIso || new Date().toISOString(),
+            } as unknown as Order;
+        }
+        return null;
+    } catch {
+        return null;
+    }
+}
+
 function TrackOrderContent() {
     const searchParams = useSearchParams();
-    const router = useRouter();
     const initialMobile = searchParams.get('mobile') || '';
 
     const [mobile, setMobile] = useState(initialMobile);
@@ -30,7 +67,6 @@ function TrackOrderContent() {
     const [error, setError] = useState('');
     const [searched, setSearched] = useState(false);
 
-    // If mobile is in URL, auto-fetch
     useEffect(() => {
         if (initialMobile && validateMobile(initialMobile) && !searched) {
             handleSearch(initialMobile);
@@ -49,29 +85,44 @@ function TrackOrderContent() {
         setOrder(null);
         setSearched(true);
 
-        // Update URL to make it shareable/refreshable
         const newUrl = new URL(window.location.href);
         newUrl.searchParams.set('mobile', cleanMobile);
         window.history.pushState({}, '', newUrl);
 
         try {
-            const q = query(
-                collection(db, 'orders'),
-                where('mobile', '==', cleanMobile),
-                orderBy('createdAt', 'desc'),
-                limit(1)
-            );
-            const snapshot = await getDocs(q);
+            if (navigator.onLine) {
+                const q = query(
+                    collection(db, 'orders'),
+                    where('mobile', '==', cleanMobile),
+                    orderBy('createdAt', 'desc'),
+                    limit(1)
+                );
+                const snapshot = await getDocs(q);
 
-            if (snapshot.empty) {
-                setError('No recent orders found for this mobile number.');
-            } else {
-                setOrder({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Order);
+                if (!snapshot.empty) {
+                    setOrder({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as Order);
+                    trackEvent('track_order', 'engagement');
+                    setLoading(false);
+                    return;
+                }
+            }
+
+            // Fallback: search local offline queue if no online record found or network dropped
+            const localOfflineOrder = findOfflinePendingOrder(cleanMobile);
+            if (localOfflineOrder) {
+                setOrder(localOfflineOrder);
                 trackEvent('track_order', 'engagement');
+            } else {
+                setError('No recent orders found for this mobile number.');
             }
         } catch (err) {
-            console.error('Failed to track order:', err);
-            setError('Could not fetch order status. Please try again.');
+            console.warn('Failed to fetch online order status, checking local offline queue:', err);
+            const localOfflineOrder = findOfflinePendingOrder(cleanMobile);
+            if (localOfflineOrder) {
+                setOrder(localOfflineOrder);
+            } else {
+                setError('Could not fetch order status. Please check your connection and try again.');
+            }
         } finally {
             setLoading(false);
         }
@@ -86,7 +137,6 @@ function TrackOrderContent() {
                     <p className="text-sm text-gray-500">Enter your registered mobile number</p>
                 </div>
 
-                {/* Search Form */}
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();
@@ -122,12 +172,12 @@ function TrackOrderContent() {
                     {error && <p className="mt-2 text-xs text-red-500 font-medium text-center">{error}</p>}
                 </form>
 
-                {/* Tracking Result */}
                 {searched && !loading && order && (
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        {/* Status Header */}
                         <div className="bg-gray-50 border-b border-gray-100 p-5 text-center">
-                            <p className="text-xs text-gray-500 mb-1">Order #{order.id.slice(-6).toUpperCase()}</p>
+                            <p className="text-xs text-gray-500 mb-1">
+                                Order #{typeof order.id === 'string' ? order.id.slice(-8).toUpperCase() : 'PENDING'}
+                            </p>
                             <h2 className="text-lg font-bold text-gray-900 mb-2">
                                 {order.status === OrderStatus.CANCELLED ? 'Order Cancelled' : 'Arriving Soon'}
                             </h2>
@@ -136,11 +186,9 @@ function TrackOrderContent() {
                             </p>
                         </div>
 
-                        {/* Timeline */}
                         {order.status !== OrderStatus.CANCELLED && (
                             <div className="p-6 border-b border-gray-100">
                                 <div className="relative pl-4 space-y-6">
-                                    {/* Vertical Line */}
                                     <div className="absolute left-6 top-2 bottom-2 w-px bg-gray-100" />
 
                                     {STATUS_TIMELINE.map((timelineStatus, index) => {
@@ -151,7 +199,6 @@ function TrackOrderContent() {
 
                                         return (
                                             <div key={timelineStatus} className="relative flex items-center gap-4">
-                                                {/* Dot */}
                                                 <div
                                                     className={`relative z-10 shrink-0 w-4 h-4 rounded-full border-2 bg-white transition-colors duration-500 ${isCompleted ? 'border-green-500' : 'border-gray-200'
                                                         }`}
@@ -164,7 +211,6 @@ function TrackOrderContent() {
                                                     )}
                                                 </div>
 
-                                                {/* Label */}
                                                 <div>
                                                     <p
                                                         className={`text-sm font-semibold transition-colors duration-500 ${isCompleted ? 'text-gray-900' : 'text-gray-400'
@@ -192,7 +238,6 @@ function TrackOrderContent() {
                             </div>
                         )}
 
-                        {/* Order Summary & Support */}
                         <div className="p-5 bg-gray-50">
                             <div className="flex justify-between items-center mb-4">
                                 <div>
@@ -201,12 +246,12 @@ function TrackOrderContent() {
                                 </div>
                                 <div className="text-right">
                                     <p className="text-xs text-gray-500 font-medium">Payment</p>
-                                    <p className="text-sm font-semibold text-gray-900">Cash on Delivery</p>
+                                    <p className="text-sm font-semibold text-gray-900">{order.paymentMethod || 'Cash on Delivery'}</p>
                                 </div>
                             </div>
 
                             <a
-                                href={`https://wa.me/${SHOP_CONFIG.whatsapp}?text=${encodeURIComponent(`Hi, I need help with my order #${order.id.slice(-6).toUpperCase()}`)}`}
+                                href={`https://wa.me/${SHOP_CONFIG.whatsapp}?text=${encodeURIComponent(`Hi, I need help with my order #${typeof order.id === 'string' ? order.id.slice(-8).toUpperCase() : ''}`)}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="block w-full text-center py-2.5 text-sm font-semibold text-green-700 bg-green-100/50 border border-green-200/50 rounded-xl hover:bg-green-100 transition-colors"

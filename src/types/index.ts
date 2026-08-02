@@ -70,6 +70,7 @@ export interface Order {
   deliveryCharge: number;
   totalAmount: number;
   deliveryType: DeliveryType;
+  paymentMethod?: string;
   address: string;
   deliveryZone?: string;      // Zone key from DELIVERY_ZONES (e.g. 'bus-stand')
   deliveryZoneLabel?: string; // Human-readable zone label for admin display
