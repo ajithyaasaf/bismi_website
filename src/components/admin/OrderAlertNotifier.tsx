@@ -6,7 +6,7 @@ import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Order } from '@/types';
 import { formatCurrency } from '@/lib/utils';
-import { playOrderNotificationChime } from '@/lib/audioNotification';
+import { speakOrderAnnouncement } from '@/lib/audioNotification';
 
 const SOUND_PREF_KEY = 'bismi_admin_sound_enabled';
 
@@ -40,13 +40,13 @@ export default function OrderAlertNotifier() {
             /* silent fallback */
         }
         if (next) {
-            playOrderNotificationChime();
+            speakOrderAnnouncement('Test Customer', 160);
         }
     };
 
     const enableAudioContext = () => {
         setAudioAllowed(true);
-        playOrderNotificationChime();
+        speakOrderAnnouncement('Test Customer', 160);
     };
 
     // Real-time Firestore Listener for Pending Orders
@@ -84,7 +84,7 @@ export default function OrderAlertNotifier() {
 
                     if (soundEnabled) {
                         try {
-                            playOrderNotificationChime();
+                            speakOrderAnnouncement(latest.customerName, latest.totalAmount);
                         } catch {
                             setAudioAllowed(false);
                         }
