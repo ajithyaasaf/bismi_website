@@ -72,9 +72,9 @@ function MenuContent() {
     };
 
     // Category display list including active deep-linked ones like "mutton"
-    const categoryOptions = [
+    const categoryOptions: Array<{ id: string | null; name: string; emoji: string }> = [
         { id: null, name: 'All', emoji: '' },
-        ...CATEGORIES.map(c => ({ id: c.id as string | null, name: c.name, emoji: c.emoji })),
+        ...CATEGORIES.map(c => ({ id: c.id as string | null, name: c.name as string, emoji: c.emoji as string })),
     ];
 
     // If activeCategory is not in CATEGORIES (e.g. mutton), add it dynamically
