@@ -10,8 +10,8 @@ export default function FloatingCartBar() {
     const { items, itemCount, subtotal } = useCart();
     const pathname = usePathname();
 
-    // Hide if cart is empty or we are already on the cart/checkout pages
-    const isHiddenPath = pathname === '/cart' || pathname === '/checkout';
+    // Hide if cart is empty, on cart/checkout pages, or on admin pages
+    const isHiddenPath = pathname === '/cart' || pathname === '/checkout' || pathname.startsWith('/admin');
     const deliveryCharge = 0; // Always free for now
     const total = subtotal + deliveryCharge;
     const isBelowMinimum = subtotal < SHOP_CONFIG.minimumOrderAmount;

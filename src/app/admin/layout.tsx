@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 import { AuthProvider } from '@/context/AuthContext';
 import AdminGuard from '@/components/admin/AdminGuard';
 import AdminSidebar from '@/components/admin/AdminSidebar';
+import OrderAlertNotifier from '@/components/admin/OrderAlertNotifier';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
@@ -23,6 +24,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <AdminGuard>
                 <div className="min-h-screen bg-gray-50 flex">
                     <AdminSidebar />
+                    <OrderAlertNotifier />
                     <div className="flex-1 min-w-0">
                         {children}
                     </div>
